@@ -87,6 +87,25 @@ Displays a placeholder for a muted note.
 			<template #name>
 				{{ userName }}
 			</template>
+		<!-- HamMoe Plus Patch -->
+		<I18n v-if="mute.stpvMute.reason === 'noteMuted'" :src="i18n.ts.userSaysSomethingInMutedNote" tag="small">
+			<template #name>
+				{{ userName }}
+			</template>
+		</I18n>
+		<I18n v-else-if="mute.stpvMute.reason === 'authorMuted'" :src="i18n.ts.userSaysSomething" tag="small">
+			<template #name>
+				{{ userName }}
+			</template>
+		</I18n>
+		<I18n v-else-if="mute.stpvMute.reason === 'domainMuted'" :src="i18n.ts.stpvDomainUserSaysSomething" tag="small">
+			<template #name>
+				{{ userName }}
+			</template>
+			<template #domain>
+				{{ mute.stpvMute.detail }}
+			</template>
+		</I18n>
 		</I18n>
 	</div>
 </div>

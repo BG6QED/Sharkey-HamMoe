@@ -48,7 +48,7 @@ function greet(bootLogger: Logger) {
 	}
 
 	bootLogger.info('Welcome to Sharkey!');
-	bootLogger.info(`Sharkey-HamMoe v${meta.gitVersion ?? meta.version}`, null, true);
+	bootLogger.info(`Sharkey v${meta.gitVersion ?? meta.version}`, null, true);
 }
 
 /**

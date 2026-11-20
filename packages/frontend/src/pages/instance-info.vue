@@ -109,6 +109,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 					{{ instance.description }}
 				</FormSection>
 
+				<FormSection v-if="$i">
+					<template #label>{{ i18n.ts.muteAndBlock }}</template>
+					<div class="_gaps_s">
+						<MkSwitch v-model="isSoftMuted">{{ i18n.ts.stpvMuteInstance }}</MkSwitch>
+					</div>
+				</FormSection>
+
 				<FormSection v-if="iAmModerator">
 					<template #label>{{ i18n.ts.moderation }}</template>
 					<div class="_gaps">
@@ -227,6 +234,7 @@ import number from '@/filters/number.js';
 import { iAmModerator, iAmAdmin } from '@/i.js';
 import { definePage } from '@/page.js';
 import { i18n } from '@/i18n.js';
+import { store } from '@/store.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import { getProxiedImageUrlNullable } from '@/utility/media-proxy.js';
@@ -279,6 +287,21 @@ const baseDomains = computed(() => {
 const isBaseBlocked = computed(() => meta.value && baseDomains.value.some(d => meta.value?.blockedHosts.includes(d)));
 const isBaseSilenced = computed(() => meta.value && baseDomains.value.some(d => meta.value?.silencedHosts.includes(d)));
 const isBaseMediaSilenced = computed(() => meta.value && baseDomains.value.some(d => meta.value?.mediaSilencedHosts.includes(d)));
+const isSoftMuted = computed({
+	get: () => store.r.stpvClientMutedDomains.value.includes(props.host),
+	set: (v) => {
+		if (v) {
+			store.set('stpvClientMutedDomains', [props.host, ...store.s.stpvClientMutedDomains].slice(0, 100));
+		} else {
+			store.set('stpvClientMutedDomains', store.s.stpvClientMutedDomains
+				.filter(x => x !== props.host)
+				.filter(x => x)
+				.slice(0, 100),
+			);
+		}
+	},
+});
+
 
 const badges = computed(() => {
 	const arr: Badge[] = [];

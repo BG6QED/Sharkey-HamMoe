@@ -10,6 +10,12 @@
  * This file is used to generate API documentation and EndpointsModule.
  */
 
+// HamMoe Plus endpoints
+export * as 'stpv/reactions-stat' from './endpoints/stpv/reactions-stat.js';
+export * as 'notes/make-private' from './endpoints/notes/make-private.js';
+export * as 'notes/make-private-many' from './endpoints/notes/make-private-many.js';
+export * as 'notes/make-private-many-count' from './endpoints/notes/make-private-many-count.js';
+
 export * as 'admin/abuse-report/notification-recipient/create' from './endpoints/admin/abuse-report/notification-recipient/create.js';
 export * as 'admin/abuse-report/notification-recipient/delete' from './endpoints/admin/abuse-report/notification-recipient/delete.js';
 export * as 'admin/abuse-report/notification-recipient/list' from './endpoints/admin/abuse-report/notification-recipient/list.js';

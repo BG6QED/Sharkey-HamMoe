@@ -25,6 +25,7 @@ import { getAccountFromId } from '@/utility/get-account-from-id.js';
 import { deckStore } from '@/ui/deck/deck-store.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { fetchCustomEmojis } from '@/custom-emojis.js';
+import { loadFontStyle } from '@/utility/load-font.js';
 import { prefer } from '@/preferences.js';
 import { $i } from '@/i.js';
 
@@ -324,6 +325,15 @@ export async function common(createVue: () => Promise<App<Element>>) {
 	window.onunhandledrejection = null;
 
 	removeSplash();
+
+	//#region Load default font (HamMoe Plus)
+	const def_arr = miLocalStorage.getItem('defaultFontFace')?.split('_');
+	const fontId = def_arr?.[0];
+	if (fontId) {
+		loadFontStyle(fontId);
+	} else if (window.navigator.language.includes('zh')) {
+		loadFontStyle('maokentangyuan');
+	}
 
 	//#region Self-XSS 対策メッセージ
 	if (!_DEV_) {

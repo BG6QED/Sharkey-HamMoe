@@ -193,6 +193,10 @@ export const ROUTE_DEF = [{
 		name: 'other',
 		component: page(() => import('@/pages/settings/other.vue')),
 	}, {
+		path: '/stpv',
+		name: 'stpv',
+		component: page(() => import('@/pages/settings/stpv.vue')),
+	}, {
 		path: '/',
 		component: page(() => import('@/pages/_empty_.vue')),
 	}],
@@ -614,6 +618,14 @@ export const ROUTE_DEF = [{
 	path: '/reversi/g/:gameId',
 	component: page(() => import('@/pages/reversi/game.vue')),
 	loginRequired: false,
+}, {
+	path: '/make-private-many',
+	component: page(() => import('@/pages/make-private-many.vue')),
+	loginRequired: true,
+}, {
+	path: '/stpv/reactions-stat',
+	component: page(() => import('@/pages/stpv/reactions-stat.vue')),
+	loginRequired: true,
 }, {
 	path: '/debug',
 	component: page(() => import('@/pages/debug.vue')),

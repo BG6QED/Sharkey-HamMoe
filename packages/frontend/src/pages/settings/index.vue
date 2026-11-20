@@ -108,6 +108,11 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		to: '/settings/preferences',
 		active: currentPage.value?.route.name === 'preferences',
 	}, {
+		icon: 'ph-planet ph-bold ph-lg',
+		text: 'HamMoe Plus',
+		to: '/settings/stpv',
+		active: currentPage.value?.route.name === 'stpv',
+	}, {
 		icon: 'ti ti-palette',
 		text: i18n.ts.theme,
 		to: '/settings/theme',

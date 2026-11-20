@@ -94,6 +94,8 @@ import { deepClone } from '@/utility/clone.js';
 import { dateTimeFormat } from '@/utility/intl-const.js';
 import { prefer } from '@/preferences';
 import { getPluginHandlers } from '@/plugin.js';
+import { spacingNote } from '@/utility/autospacing';
+import { getAppearNote } from '@/utility/get-appear-note';
 import SkNoteTranslation from '@/components/SkNoteTranslation.vue';
 import { getSelfNoteIds } from '@/utility/get-self-note-ids';
 import SkUrlPreviewGroup from '@/components/SkUrlPreviewGroup.vue';
@@ -145,7 +147,7 @@ const isRenote = (
 );
 
 const el = shallowRef<HTMLElement>();
-const appearNote = computed(() => isRenote ? note.value.renote as Misskey.entities.Note : note.value);
+const appearNote = computed(() => spacingNote(getAppearNote(note.value)));
 const parsed = computed(() => appearNote.value.text ? mfm.parse(appearNote.value.text) : []);
 
 const showContent = ref(false);

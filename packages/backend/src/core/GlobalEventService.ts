@@ -125,6 +125,9 @@ export interface NoteEventTypes {
 		id: MiNote['id'];
 		userId: MiUser['id'];
 	};
+	madePrivate: {
+		deletedAt: Date;
+	}
 }
 type NoteStreamEventTypes = {
 	[key in keyof NoteEventTypes]: {

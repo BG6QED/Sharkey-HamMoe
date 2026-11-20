@@ -10,6 +10,7 @@ import { host, url } from '@@/js/config.js';
 import type { Router } from '@/router.js';
 import type { MenuItem } from '@/types/menu.js';
 import { i18n } from '@/i18n.js';
+import { store } from '@/store.js';
 import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -450,6 +451,24 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 		});
 	}
 
+
+	menuItems.push(store.s.stpvClientMutedUsers.includes(user.id)
+			? {
+				icon: 'ph-eye-closed ph-bold ph-lg',
+				text: i18n.ts.stpvUnmuteUser,
+				action: () => {
+					store.set('stpvClientMutedUsers', store.s.stpvClientMutedUsers.filter((x) => x !== user.id).filter(x => x));
+				},
+			}
+			: {
+				icon: 'ph-eye-closed ph-bold ph-lg',
+				text: i18n.ts.stpvMuteUser,
+				action: () => {
+					// Limit max 100
+					store.set('stpvClientMutedUsers', [user.id, ...store.s.stpvClientMutedUsers.filter(x => x).slice(0, 100)]);
+				},
+			},
+		);
 	const userActions = getPluginHandlers('user_action');
 	if (userActions.length > 0) {
 		menuItems.push({ type: 'divider' }, ...userActions.map(action => ({

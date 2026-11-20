@@ -9,8 +9,8 @@ const __dirname = import.meta.dirname;
 const packageJsonPath = __dirname + '/../package.json';
 
 function getGitVersion(versionFromPackageJson) {
-	// Sharkey-HamMoe: use the clean version string without a git hash suffix,
-	// so the banner reads "Sharkey-HamMoe v2026.11.0".
+	// Keep the clean fork version (e.g. 2026.11.0-hammoe) without a git hash
+	// suffix, matching the convention of other Sharkey forks.
 	return versionFromPackageJson;
 }
 

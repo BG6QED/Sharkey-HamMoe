@@ -61,11 +61,11 @@ For example, when viewing a reply on the timeline, SkNoteSub will be used to dis
 				<button v-else class="_button" :class="$style.noteFooterButton" disabled>
 					<i class="ph-prohibit ph-bold ph-lg"></i>
 				</button>
-				<button v-if="note.myReaction == null && note.reactionAcceptance !== 'likeOnly'" ref="likeButton" :class="$style.noteFooterButton" class="_button" @click.stop="like()">
+				<button v-if="note.myReaction == null && note.reactionAcceptance !== 'likeOnly' && !stpvDisableReactions" ref="likeButton" :class="$style.noteFooterButton" class="_button" @click.stop="like()">
 					<i class="ph-heart ph-bold ph-lg"></i>
 				</button>
 				<button v-if="note.myReaction == null" ref="reactButton" :class="$style.noteFooterButton" class="_button" @click.stop="react()">
-					<i v-if="note.reactionAcceptance === 'likeOnly'" class="ph-heart ph-bold ph-lg"></i>
+					<i v-if="note.reactionAcceptance === 'likeOnly' || stpvDisableReactions" class="ph-heart ph-bold ph-lg"></i>
 					<i v-else class="ph-smiley ph-bold ph-lg"></i>
 				</button>
 				<button v-if="note.myReaction != null" ref="reactButton" class="_button" :class="[$style.noteFooterButton, $style.reacted]" @click="undoReact(note)">
@@ -119,6 +119,9 @@ import { getNoteClipMenu, getNoteMenu, translateNote } from '@/utility/get-note-
 import { boostMenuItems, computeRenoteTooltip } from '@/utility/boost-quote.js';
 import { prefer } from '@/preferences.js';
 import { useNoteCapture } from '@/use/use-note-capture.js';
+import { spacingNote } from '@/utility/autospacing';
+import { stpvNoteClassBindings } from '@/utility/stpv-note-class-bindings';
+import { store } from '@/store';
 import SkMutedNote from '@/components/SkMutedNote.vue';
 import { instance, policies } from '@/instance';
 import { getAppearNote } from '@/utility/get-appear-note';
@@ -149,7 +152,7 @@ const emit = defineEmits<{
 
 const note = ref(deepClone(props.note));
 
-const appearNote = computed(() => getAppearNote(note.value));
+const appearNote = computed(() => spacingNote(getAppearNote(note.value)));
 
 const canRenote = computed(() => ['public', 'home'].includes(appearNote.value.visibility) || appearNote.value.userId === $i?.id);
 const hideLine = computed(() => props.detail);
@@ -168,6 +171,7 @@ const likeButton = shallowRef<HTMLElement>();
 const renoteTooltip = computeRenoteTooltip(appearNote);
 
 const defaultLike = computed(() => prefer.s.like ? prefer.s.like : null);
+const stpvDisableReactions = store.r.stpvDisableAllReactions;
 const replies = ref<Misskey.entities.Note[]>([]);
 
 const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({

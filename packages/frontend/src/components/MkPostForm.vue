@@ -72,7 +72,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div :class="[$style.textOuter, { [$style.withCw]: useCw }]">
 		<div v-if="channel" :class="$style.colorBar" :style="{ background: channel.color }"></div>
+		<textarea v-if="stpvAdvancedPostForm" v-model="prefixText" :class="[$style.presuftext]" :disabled="posting || posted" :readonly="textAreaReadOnly" :placeholder="i18n.ts.stpvPFprefix" dir="auto" @keydown="onKeydown" @keyup="onKeyup"/>
 		<textarea ref="textareaEl" v-model="text" :class="[$style.text]" :disabled="posting || posted" :readonly="textAreaReadOnly" :placeholder="placeholder" data-cy-post-form-text dir="auto" @keydown="onKeydown" @keyup="onKeyup" @paste="onPaste" @compositionupdate="onCompositionUpdate" @compositionend="onCompositionEnd"/>
+		<textarea v-if="stpvAdvancedPostForm" v-model="suffixText" :class="[$style.presuftext]" :disabled="posting || posted" :readonly="textAreaReadOnly" :placeholder="i18n.ts.stpvPFsuffix" dir="auto" @keydown="onKeydown" @keyup="onKeyup"/>
 		<div v-if="maxTextLength - textLength < 100" :class="['_acrylic', $style.textCount, { [$style.textOver]: textLength > maxTextLength }]">{{ maxTextLength - textLength }}</div>
 	</div>
 	<input v-show="withHashtags" ref="hashtagsInputEl" v-model="hashtags" :class="$style.hashtags" :placeholder="i18n.ts.hashtags" list="hashtags">
@@ -181,9 +183,13 @@ const hashtagsInputEl = useTemplateRef('hashtagsInputEl');
 const visibilityButton = useTemplateRef('visibilityButton');
 const otherSettingsButton = useTemplateRef('otherSettingsButton');
 
+const stpvAdvancedPostForm = computed(() => store.r.stpvAdvancedPostForm.value && !props.editId);
+
 const posting = ref(false);
 const posted = ref(false);
 const text = ref(props.initialText ?? '');
+const prefixText = ref(store.s.stpvPFDefaultPrefix);
+const suffixText = ref(store.s.stpvPFDefaultSuffix);
 const files = ref(props.initialFiles ?? []);
 const poll = ref<PollEditorModelValue | null>(null);
 const initialPoll = ref<PollEditorModelValue | null>(null);
@@ -213,6 +219,14 @@ const scheduleNote = ref<{
 } | null>(null);
 const renoteTargetNote: ShallowRef<PostFormProps['renote'] | null> = shallowRef(props.renote);
 const postFormActions = getPluginHandlers('post_form_action');
+
+const today = ref(new Date());
+const isAprilFoolsDay = computed(() =>
+	(instance as any).stpvAprilFoolsEnabled &&
+	today.value.getMonth() === 3 &&
+	today.value.getDate() === 1,
+);
+const displayApirlFools = computed(() => isAprilFoolsDay.value && store.r.stpvAprilFools.value);
 
 const draftKey = computed((): string => {
 	let key = props.channel ? `channel:${props.channel.id}` : '';
@@ -955,6 +969,12 @@ async function post(ev?: MouseEvent) {
 		}
 	}
 
+	if (stpvAdvancedPostForm.value) {
+		postData.text = `${prefixText.value}${postData.text}${suffixText.value}`;
+		store.set('stpvPFDefaultPrefix', prefixText.value);
+		store.set('stpvPFDefaultSuffix', suffixText.value);
+	}
+
 	// plugin
 	const notePostInterruptors = getPluginHandlers('note_post_interruptor');
 	if (notePostInterruptors.length > 0) {
@@ -1463,6 +1483,7 @@ defineExpose({
 	margin: 0 20px 16px 20px;
 }
 
+.presuftext,
 .cw,
 .hashtags,
 .text {

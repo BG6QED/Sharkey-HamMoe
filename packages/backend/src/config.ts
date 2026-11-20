@@ -146,6 +146,7 @@ type Source = Partial<QueueConfig> & {
 	perChannelMaxNoteCacheCount?: number;
 	perUserNotificationsMaxCount?: number;
 	deactivateAntennaThreshold?: number;
+	stpvAprilFoolsEnabled?: boolean;
 
 	import?: {
 		downloadTimeout: number;
@@ -334,6 +335,7 @@ export type Config = QueueConfig & {
 	perChannelMaxNoteCacheCount: number;
 	perUserNotificationsMaxCount: number;
 	deactivateAntennaThreshold: number;
+	stpvAprilFoolsEnabled?: boolean;
 
 	import: {
 		downloadTimeout: number;
@@ -511,6 +513,7 @@ export function loadConfig(logger?: Logger): Config {
 		perChannelMaxNoteCacheCount: config.perChannelMaxNoteCacheCount ?? 1000,
 		perUserNotificationsMaxCount: config.perUserNotificationsMaxCount ?? 500,
 		deactivateAntennaThreshold: config.deactivateAntennaThreshold ?? (1000 * 60 * 60 * 24 * 7),
+		stpvAprilFoolsEnabled: config.stpvAprilFoolsEnabled,
 		import: config.import,
 		pidFile: config.pidFile,
 		filePermissionBits: config.filePermissionBits,

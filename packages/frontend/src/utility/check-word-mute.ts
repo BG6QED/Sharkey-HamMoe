@@ -4,6 +4,7 @@
  */
 
 import * as Misskey from 'misskey-js';
+import { checkStpvSoftMute } from './check-stpv-soft-mute';
 import { provide, inject, reactive, computed, unref } from 'vue';
 import type { Ref, ComputedRef, Reactive } from 'vue';
 import { $i } from '@/i.js';
@@ -25,6 +26,8 @@ export interface Mute {
 	noteMandatoryCW?: string | null;
 	userMandatoryCW?: string | null;
 	instanceMandatoryCW?: string | null;
+
+	stpvMute: ReturnType<typeof checkStpvSoftMute>;
 }
 
 export interface MuteOverrides {
@@ -107,6 +110,8 @@ function getMutes(note: Misskey.entities.Note, withHardMute: boolean, uncollapse
 		overrides.all,
 	) : {};
 
+	const stpvMute = checkStpvSoftMute(note);
+
 	const isMe = $i != null && $i.id === note.userId;
 	const bypassSilence = note.bypassSilence || note.user.bypassSilence;
 
@@ -123,7 +128,7 @@ function getMutes(note: Misskey.entities.Note, withHardMute: boolean, uncollapse
 
 	const hasMute = hardMuted || softMutedWords.length > 0 || sensitiveMuted || userSilenced || instanceSilenced || threadMuted || noteMuted || !!noteMandatoryCW || !!userMandatoryCW || !!instanceMandatoryCW;
 
-	return { hasMute, hardMuted, softMutedWords, sensitiveMuted, userSilenced, instanceSilenced, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW };
+	return { hasMute, hardMuted, softMutedWords, sensitiveMuted, userSilenced, instanceSilenced, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW, stpvMute };
 }
 
 function getNoteMandatoryCW(note: Misskey.entities.Note, isMe: boolean, uncollapseCW: boolean, override: Partial<Mute>): string | null {

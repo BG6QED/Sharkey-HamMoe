@@ -10478,6 +10478,10 @@ export interface Locale extends ILocale {
          * Shared access login
          */
         "sharedAccessLogin": string;
+        /**
+         * Report Accepted
+         */
+        "reportAccepted": string;
     };
     "_deck": {
         /**
@@ -13791,6 +13795,257 @@ export interface Locale extends ILocale {
      * Root
      */
     "root": string;
+    /**
+     * Sharkey HamMoe Edition adds additional keyword syntax to the antenna settings.
+     * That means, the special keyword `domain:example.com` will match all posts from `example.com`. This keyword can also be used in OR syntax.
+     * Specifically, you must use `domain:here` to match posts in this instance.
+     *
+     */
+    "stpvAntennaPatch": string;
+    /**
+     * Use the `A OR B` syntax to search for notes containing either A or B. `A B` (with a space in between) means posts containing both keywords A and B.
+     */
+    "stpvPgroongaSearchInstru": string;
+    /**
+     * Time Travel
+     */
+    "timeTravel": string;
+    /**
+     * Show posts before this date
+     */
+    "timeTravelDescription": string;
+    "makePrivate": {
+        /**
+         * Make private
+         */
+        "text": string;
+        /**
+         * Making a post private will make it visible only to you and send a deletion request to remote servers.
+         */
+        "description": string;
+        /**
+         * Are you sure you want to make this post private?
+         */
+        "confirm": string;
+        /**
+         * Making posts private in batches is a **permanent, irreversible** process and places a certain amount of load on the server. Please proceed with caution. You can only make posts private in batches once an hour.
+         */
+        "warn": string;
+        /**
+         * Since Date
+         */
+        "sinceDate": string;
+        /**
+         * Until Date
+         */
+        "untilDate": string;
+        /**
+         * Since this is a very dangerous operation, please enter `{text}` to enable this feature
+         */
+        "dangerTip": ParameterizedString<"text">;
+        /**
+         * There are {count} posts that will be made private
+         */
+        "manyCount": ParameterizedString<"count">;
+        /**
+         * Make posts private!
+         */
+        "textmany": string;
+        /**
+         * Do you really want to make these {count} posts private in batches? This operation is irreversible and your posts will only be visible to you forever (really!)
+         */
+        "manyWarn": ParameterizedString<"count">;
+        /**
+         * The making-private process has started
+         */
+        "didStart": string;
+        /**
+         * Bulk make posts private
+         */
+        "bulkText": string;
+    };
+    "_stpvPlus": {
+        /**
+         * HamMoe Plus Settings
+         */
+        "title": string;
+        /**
+         * These settings are added by Sharkey HamMoe and are not available in normal Sharkey instances.
+         */
+        "info": string;
+        "disableAllReactions": {
+            /**
+             * Disable all reactions for front-end
+             */
+            "label": string;
+            /**
+             * This only includes front-end changes, so other people can still react emojis to you. Only available for Sharkey style note.
+             */
+            "caption": string;
+        };
+        "defaultFont": {
+            /**
+             * Default Font
+             */
+            "label": string;
+            /**
+             * Some Chinese font files are large, please wait for a while for the font to load after switching. 为了更好的体验，仅支持简体的峄山碑篆体和仅支持繁体的崇羲篆體会互相补充。
+             */
+            "caption": string;
+        };
+        "fontType": {
+            /**
+             * Font Type
+             */
+            "label": string;
+            /**
+             * Select subfont for the font
+             */
+            "caption": string;
+        };
+        "customFont": {
+            /**
+             * Custom Font...
+             */
+            "label": string;
+            /**
+             * Select a font from your local font list
+             */
+            "caption": string;
+        };
+        "softMutedUsers": {
+            /**
+             * User IDs soft muted on the timeline
+             */
+            "label": string;
+            /**
+             * Fill in the user IDs that can be found on Raw, one per line. At most 100 IDs, and any exceeded will be deleted.
+             */
+            "caption": string;
+        };
+        "softMutedNotes": {
+            /**
+             * Post IDs soft muted on the timeline
+             */
+            "label": string;
+            /**
+             * Fill in the note IDs that can be found on URL, one per line. At most 100 IDs, and any exceeded will be deleted.
+             */
+            "caption": string;
+        };
+        "softMutedDomains": {
+            /**
+             * Domain names soft muted on the timeline
+             */
+            "label": string;
+            /**
+             * Fill in the domain names, one per line. At most 100 domains, and any exceeded will be deleted.
+             */
+            "caption": string;
+        };
+        "hideReplyAcct": {
+            /**
+             * Hide collapsed replied note acct
+             */
+            "label": string;
+            /**
+             * Don't show @username@domain
+             */
+            "caption": string;
+        };
+        "advancedPostForm": {
+            /**
+             * Advanced post form
+             */
+            "label": string;
+            /**
+             * Allows adding prefixes, suffixes, etc.
+             */
+            "caption": string;
+        };
+        "combineRepliesQuotes": {
+            /**
+             * Combine quotes and replies
+             */
+            "label": string;
+            /**
+             * Display both quotes and replies on the post details page
+             */
+            "caption": string;
+        };
+        "disableTimeline": {
+            /**
+             * Disable timeline
+             */
+            "label": string;
+            /**
+             * Disable {name} timeline
+             */
+            "caption": ParameterizedString<"name">;
+        };
+        "aprilFools": {
+            /**
+             * April Fools' Day Easter Eggs
+             */
+            "label": string;
+            /**
+             * Open it and you will find a surprise(?) on April 1st
+             */
+            "caption": string;
+        };
+    };
+    /**
+     * Soft mute notes in timeline
+     */
+    "stpvMuteUser": string;
+    /**
+     * Don't soft mute notes in timeline
+     */
+    "stpvUnmuteUser": string;
+    /**
+     * Soft mute this note later
+     */
+    "stpvMuteNote": string;
+    /**
+     * Unmute this note
+     */
+    "stpvUnmuteNote": string;
+    /**
+     * Soft mute notes from this instance in timeline
+     */
+    "stpvMuteInstance": string;
+    /**
+     * {name} from {domain} said something
+     */
+    "stpvDomainUserSaysSomething": ParameterizedString<"name" | "domain">;
+    /**
+     * Emoji Reactions Stats
+     */
+    "stpvReactionsStat": string;
+    /**
+     * Shows the the first 100 of emojis mostly reacted
+     */
+    "stpvReactionsStatDescription": string;
+    /**
+     * prefix...
+     */
+    "stpvPFprefix": string;
+    /**
+     * ...suffix
+     */
+    "stpvPFsuffix": string;
+    /**
+     * Oops! Your browser doesn't support the queryLocalFonts method, so please fill in the font name manually in the text box.
+     */
+    "stpvWarnNoQueryLocalFonts": string;
+    /**
+     * Emoji size
+     */
+    "stpvEmojiPickerItemSize": string;
+    /**
+     * Your report against {target} has been accepted. Thank you for your help! The administrators have taken appropriate action.
+     */
+    "reportAcceptedBody": ParameterizedString<"target">;
 }
 export type Locales = {
     [lang: string]: Locale;

@@ -48,9 +48,11 @@ export function build() {
 	const sharkeyLocales = languages.reduce((a, c) => (a[c] = loadOptionalYaml(`../sharkey-locales/${c}.yml`), a), {});
 		/** @type {Record<string, ILocale>} */
 	const misskeyLocales = languages.reduce((a, c) => (a[c] = loadOptionalYaml(`${c}.yml`), a), {});
+		/** @type {Record<string, ILocale>} */
+	const hammoeLocales = languages.reduce((a, c) => (a[c] = loadOptionalYaml(`../hammoe-locales/${c}.yml`), a), {});
 
-	// merge sharkey and misskey's locales. the second argument (sharkey) overwrites the first argument (misskey).
-  const locales = merge(misskeyLocales, sharkeyLocales);
+	// merge misskey, sharkey and HamMoe locales. later arguments overwrite earlier ones.
+  const locales = merge(misskeyLocales, sharkeyLocales, hammoeLocales);
 
 	/**
 	 * 空文字列が入ることがあり、フォールバックが動作しなくなるのでプロパティごと消す

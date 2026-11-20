@@ -225,6 +225,19 @@ export function getNoteMenu(props: {
 		});
 	}
 
+	function makePrivate(): void {
+		os.confirm({
+			type: 'warning',
+			text: `${i18n.ts.makePrivate.description} ${i18n.ts.makePrivate.confirm}`,
+		}).then(({ canceled }) => {
+			if (canceled) return;
+
+			misskeyApi('notes/make-private', {
+				noteId: appearNote.id,
+			});
+		});
+	}
+
 	function delEdit(): void {
 		os.confirm({
 			type: 'warning',
@@ -406,6 +419,23 @@ export function getNoteMenu(props: {
 			children: () => getNoteClipMenu(props),
 		});
 
+		menuItems.push(store.s.stpvClientMutedNotes.includes(props.note.id)
+			? {
+				icon: 'ph-eye-closed ph-bold ph-lg',
+				text: i18n.ts.stpvUnmuteNote,
+				action: () => {
+					store.set('stpvClientMutedNotes', store.s.stpvClientMutedNotes.filter((x) => x !== props.note.id).filter(x => x));
+				},
+			}
+			: {
+				icon: 'ph-eye-closed ph-bold ph-lg',
+				text: i18n.ts.stpvMuteNote,
+				action: () => {
+					// Limit max 100
+					store.set('stpvClientMutedNotes', [props.note.id, ...store.s.stpvClientMutedNotes.filter(x => x).slice(0, 100)]);
+				},
+			},
+		);
 		if (appearNote.isMutingThread) {
 			menuItems.push({
 				icon: 'ti ti-message-off',
@@ -520,6 +550,12 @@ export function getNoteMenu(props: {
 					action: delEdit,
 				});
 			}
+			menuItems.push({
+				icon: 'ph-eye-slash ph-bold ph-lg',
+				text: i18n.ts.makePrivate.text,
+				danger: true,
+				action: makePrivate,
+			});
 			menuItems.push({
 				icon: 'ti ti-trash',
 				text: i18n.ts.delete,

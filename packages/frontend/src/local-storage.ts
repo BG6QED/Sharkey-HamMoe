@@ -3,7 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+type KeysStpv =
+  'customFontFaceName'|
+	'defaultFontFace';
+
 export type Keys = (
+	KeysStpv |
 	'v' |
 	'lastVersion' |
 	'instance' |

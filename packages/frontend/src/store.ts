@@ -16,6 +16,7 @@ import { Pizzax } from '@/lib/pizzax.js';
 import { DEFAULT_DEVICE_KIND } from '@/utility/device-kind.js';
 import { defaultFollowingFeedState } from '@/types/following-feed.js';
 import { searchEngineMap } from '@/utility/search-engine-map.js';
+import { stpvDefaultStoreExtension } from '@/stpv-store-ext.js';
 
 /**
  * 「状態」を管理するストア(not「設定」)
@@ -362,6 +363,7 @@ export const store = markRaw(new Pizzax('base', {
 		where: 'device',
 		default: false,
 	},
+	...stpvDefaultStoreExtension,
 	mediaListWithOneImageAppearance: {
 		where: 'device',
 		default: 'expand' as 'expand' | '16_9' | '1_1' | '2_3',

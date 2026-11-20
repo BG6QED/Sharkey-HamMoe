@@ -33,6 +33,7 @@ import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { ApLogService } from '@/core/ApLogService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
+import { IdService } from '@/core/IdService.js';
 import { Deduplicator } from '@/misc/deduplicator.js';
 import { CountingSet } from '@/misc/CountingSet.js';
 import { CacheService } from '@/core/CacheService.js';
@@ -55,6 +56,7 @@ export class NoteDeleteService {
 		@Inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
 
+		private idService: IdService,
 		private globalEventService: GlobalEventService,
 		private relayService: RelayService,
 		private federatedInstanceService: FederatedInstanceService,
@@ -75,7 +77,7 @@ export class NoteDeleteService {
 	/**
 	 * 投稿を削除します。
 	 */
-	async delete(user: MiUser, note: MiNote, deleter?: MiUser, immediate = false): Promise<void> {
+	async delete(user: MiUser, note: MiNote, deleter?: MiUser, immediate = false, opts = { makePrivate: false }): Promise<void> {
 		if (note.userId !== user.id) {
 			throw new Error(`Not deleting note ${note.id} because user ${user.id} is not the expected author ${note.userId}. This is likely a bug; please report this error to Sharkey team.`);
 		}
@@ -104,8 +106,9 @@ export class NoteDeleteService {
 		// Braces preserved to avoid merge conflicts
 		{
 			// Publish websocket deleted events
+			const publishKind = opts.makePrivate ? 'madePrivate' : 'deleted';
 			for (const note of allNotes) {
-				promises.push(this.globalEventService.publishNoteStream(note.id, 'deleted', {
+				promises.push(this.globalEventService.publishNoteStream(note.id, publishKind, {
 					id: note.id,
 					userId: note.userId,
 					body: {
@@ -178,7 +181,11 @@ export class NoteDeleteService {
 		// Don't put this in the promise array, since it needs to happen before the next section!
 		const sortedNotes = allNotes.toSorted((a, b) => b.id.localeCompare(a.id));
 		for (const note of sortedNotes) {
-			await this.notesRepository.delete({ id: note.id });
+			if (opts.makePrivate) {
+				await this.notesRepository.update({ id: note.id }, { visibility: 'specified' });
+			} else {
+				await this.notesRepository.delete({ id: note.id });
+			}
 		}
 
 		// Update the Latest Note index / following feed *after* note is deleted
@@ -190,7 +197,8 @@ export class NoteDeleteService {
 
 		// Write mod log
 		if (deleter && (user.id !== deleter.id)) {
-			promises.push(this.moderationLogService.log(deleter, 'deleteNote', {
+			const kind = opts.makePrivate ? 'makePrivateNote' : 'deleteNote';
+			promises.push(this.moderationLogService.log(deleter, kind, {
 				noteId: note.id,
 				noteUserId: note.userId,
 				noteUserUsername: user.username,
@@ -209,6 +217,39 @@ export class NoteDeleteService {
 		}
 
 		await Promise.allSettled(promises);
+	}
+
+	/**
+	 * 投稿をmake privateします。
+	 * @param user 投稿者
+	 * @param note 投稿
+	 */
+	async makePrivate(user: MiUser, note: MiNote, deleter?: MiUser) {
+		await this.delete(user, note, deleter, false, { makePrivate: true });
+	}
+
+	async makePrivateMany(user: MiUser, sinceDate: number, untilDate: number, countOnly = false) {
+		const untilId = this.idService.gen(untilDate);
+		const sinceId = this.idService.gen(sinceDate);
+		const query = this.notesRepository.createQueryBuilder()
+			.where('"userId" = :userId', { userId: user.id })
+			.andWhere('NOT visibility = \'specified\'')
+			.andWhere('id < :untilId', { untilId })
+			.andWhere('id > :sinceId', { sinceId });
+
+		if (countOnly) {
+			return query.getCount();
+		} else {
+			if (await query.getCount() > 1500) {
+				throw new Error('too many notes, the max is 1500');
+			}
+			const shouldMakePrivateNotes = await query.getMany();
+			for (const note of shouldMakePrivateNotes) {
+				await this.makePrivate(user, note);
+				await new Promise(resolve => setTimeout(resolve, 500)); // wait for a while to avoid flooding the database
+			}
+			return shouldMakePrivateNotes.length;
+		}
 	}
 
 	@bindThis

@@ -170,6 +170,9 @@ const {
 } = prefer.r;
 
 const recentlyUsedEmojis = store.r.recentlyUsedEmojis;
+const stpvEmojiPickerItemSize = store.r.stpvEmojiPickerItemSize;
+
+const emojiSize = computed(() => `${stpvEmojiPickerItemSize.value}em`);
 
 const recentlyUsedEmojisDef = computed(() => {
 	return recentlyUsedEmojis.value.map(getDef).filter(x => x != null);
@@ -518,15 +521,15 @@ defineExpose({
 	flex-direction: column;
 
 	&.s1 {
-		--eachSize: 40px;
+		--eachSize: max(40px, v-bind('emojiSize'));
 	}
 
 	&.s2 {
-		--eachSize: 45px;
+		--eachSize: max(45px, v-bind('emojiSize'));
 	}
 
 	&.s3 {
-		--eachSize: 50px;
+		--eachSize: max(50px, v-bind('emojiSize'));
 	}
 
 	&.w1 {

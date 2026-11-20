@@ -11,7 +11,7 @@ Detailed view of a note in the Sharkey style. Used when opening a note onto its 
 	ref="rootComp"
 	v-hotkey="keymap"
 	:note="appearNote"
-	:class="$style.root"
+	:class="[$style.root, ...stpvNoteClassBindings(note)]"
 	:tabindex="isDeleted ? '-1' : '0'"
 	@expandMute="n => emit('expandMute', n)"
 >
@@ -133,7 +133,7 @@ Detailed view of a note in the Sharkey style. Used when opening a note onto its 
 				<MkTime :time="appearNote.createdAt" mode="detail" colored/>
 			</MkA>
 		</div>
-		<MkReactionsViewer v-if="appearNote.reactionAcceptance !== 'likeOnly'" ref="reactionsViewer" style="margin-top: 6px;" :note="appearNote"/>
+		<MkReactionsViewer v-if="appearNote.reactionAcceptance !== 'likeOnly' && !stpvDisableReactions" ref="reactionsViewer" style="margin-top: 6px;" :note="appearNote"/>
 		<footer :class="$style.footer" class="_gaps _h_gaps" tabindex="0" role="group" :aria-label="i18n.ts.noteFooterLabel">
 			<button class="_button" :class="$style.noteFooterButton" @click="reply()">
 				<i class="ti ti-arrow-back-up"></i>
@@ -163,15 +163,15 @@ Detailed view of a note in the Sharkey style. Used when opening a note onto its 
 			>
 				<i class="ph-quotes ph-bold ph-lg"></i>
 			</button>
-			<button v-if="appearNote.myReaction == null && appearNote.reactionAcceptance !== 'likeOnly'" ref="likeButton" :class="$style.noteFooterButton" class="_button" @mousedown="like()">
+			<button v-if="appearNote.myReaction == null && appearNote.reactionAcceptance !== 'likeOnly' && !stpvDisableReactions" ref="likeButton" :class="$style.noteFooterButton" class="_button" @mousedown="like()">
 				<i class="ph-heart ph-bold ph-lg"></i>
 			</button>
 			<button ref="reactButton" :class="$style.noteFooterButton" class="_button" @click="toggleReact()">
-				<i v-if="appearNote.reactionAcceptance === 'likeOnly' && appearNote.myReaction != null" class="ti ti-heart-filled" style="color: var(--MI_THEME-love);"></i>
+				<i v-if="(appearNote.reactionAcceptance === 'likeOnly' || stpvDisableReactions) && appearNote.myReaction != null" class="ti ti-heart-filled" style="color: var(--MI_THEME-love);"></i>
 				<i v-else-if="appearNote.myReaction != null" class="ti ti-minus" style="color: var(--MI_THEME-accent);"></i>
-				<i v-else-if="appearNote.reactionAcceptance === 'likeOnly'" class="ti ti-heart"></i>
+				<i v-else-if="appearNote.reactionAcceptance === 'likeOnly' || stpvDisableReactions" class="ti ti-heart"></i>
 				<i v-else class="ph-smiley ph-bold ph-lg"></i>
-				<p v-if="(appearNote.reactionAcceptance === 'likeOnly' || prefer.s.showReactionsCount) && appearNote.reactionCount > 0" :class="$style.noteFooterButtonCount">{{ number(appearNote.reactionCount) }}</p>
+				<p v-if="(appearNote.reactionAcceptance === 'likeOnly' || stpvDisableReactions || prefer.s.showReactionsCount) && appearNote.reactionCount > 0" :class="$style.noteFooterButtonCount">{{ number(appearNote.reactionCount) }}</p>
 			</button>
 			<button v-if="prefer.s.showClipButtonInNoteFooter" ref="clipButton" class="_button" :class="$style.noteFooterButton" @click.stop="clip()">
 				<i class="ti ti-paperclip"></i>
@@ -281,6 +281,9 @@ import MkReactionIcon from '@/components/MkReactionIcon.vue';
 import MkButton from '@/components/MkButton.vue';
 import { boostMenuItems, computeRenoteTooltip } from '@/utility/boost-quote.js';
 import { instance, policies } from '@/instance.js';
+import { spacingNote } from '@/utility/autospacing';
+import { stpvNoteClassBindings } from '@/utility/stpv-note-class-bindings';
+import { store } from '@/store';
 import { getAppearNote } from '@/utility/get-appear-note.js';
 import { prefer } from '@/preferences.js';
 import { setupNoteViewInterruptors } from '@/plugin.js';
@@ -307,6 +310,8 @@ const inChannel = inject('inChannel', null);
 
 const note = ref(deepClone(props.note));
 
+const stpvDisableReactions = store.r.stpvDisableAllReactions;
+
 const isRenote = Misskey.note.isPureRenote(note.value);
 
 const rootComp = useTemplateRef('rootComp');
@@ -320,7 +325,7 @@ const clipButton = useTemplateRef('clipButton');
 const menuVersionsButton = useTemplateRef('menuVersionsButton');
 const quoteButton = useTemplateRef('quoteButton');
 const likeButton = useTemplateRef('likeButton');
-const appearNote = computed(() => getAppearNote(note.value));
+const appearNote = computed(() => spacingNote(getAppearNote(note.value)));
 const galleryEl = useTemplateRef('galleryEl');
 const isMyRenote = $i && ($i.id === note.value.userId);
 const showContent = ref(prefer.s.uncollapseCW);
@@ -484,7 +489,7 @@ function boostVisibility(forceMenu: boolean = false) {
 	}
 }
 
-if (appearNote.value.reactionAcceptance === 'likeOnly') {
+if (appearNote.value.reactionAcceptance === 'likeOnly' || stpvDisableReactions.value) {
 	useTooltip(reactButton, async (showing) => {
 		const reactions = await misskeyApi('notes/reactions', {
 			noteId: appearNote.value.id,
@@ -625,7 +630,7 @@ function reply(): void {
 function react(): void {
 	pleaseLogin({ openOnRemote: pleaseLoginContext.value });
 	showMovedDialog();
-	if (appearNote.value.reactionAcceptance === 'likeOnly') {
+	if (appearNote.value.reactionAcceptance === 'likeOnly' || stpvDisableReactions.value) {
 		sound.playMisskeySfx('reaction');
 
 		misskeyApi('notes/like', {
@@ -784,7 +789,7 @@ function loadReplies() {
 	misskeyApi('notes/children', {
 		noteId: appearNote.value.id,
 		limit: 30,
-		showQuotes: false,
+		showQuotes: store.r.stpvCombineRepliesQuotes.value,
 	}).then(res => {
 		replies.value = res;
 	});

@@ -529,6 +529,10 @@ import type {
 	NotesLikeRequest,
 	NotesLocalTimelineRequest,
 	NotesLocalTimelineResponse,
+	NotesMakePrivateRequest,
+	NotesMakePrivateManyRequest,
+	NotesMakePrivateManyCountRequest,
+	NotesMakePrivateManyCountResponse,
 	NotesMentionsRequest,
 	NotesMentionsResponse,
 	NotesPollsRecommendationRequest,
@@ -610,6 +614,8 @@ import type {
 	SponsorsRequest,
 	SponsorsResponse,
 	StatsResponse,
+	StpvReactionsStatRequest,
+	StpvReactionsStatResponse,
 	SwRegisterRequest,
 	SwRegisterResponse,
 	SwShowRegistrationRequest,
@@ -1033,6 +1039,9 @@ export type Endpoints = {
 	'notes/hybrid-timeline': { req: NotesHybridTimelineRequest; res: NotesHybridTimelineResponse };
 	'notes/like': { req: NotesLikeRequest; res: EmptyResponse };
 	'notes/local-timeline': { req: NotesLocalTimelineRequest; res: NotesLocalTimelineResponse };
+	'notes/make-private': { req: NotesMakePrivateRequest; res: EmptyResponse };
+	'notes/make-private-many': { req: NotesMakePrivateManyRequest; res: EmptyResponse };
+	'notes/make-private-many-count': { req: NotesMakePrivateManyCountRequest; res: NotesMakePrivateManyCountResponse };
 	'notes/mentions': { req: NotesMentionsRequest; res: NotesMentionsResponse };
 	'notes/polls/recommendation': { req: NotesPollsRecommendationRequest; res: NotesPollsRecommendationResponse };
 	'notes/polls/refresh': { req: NotesPollsRefreshRequest; res: EmptyResponse };
@@ -1092,6 +1101,7 @@ export type Endpoints = {
 	'server-info': { req: EmptyRequest; res: ServerInfoResponse };
 	'sponsors': { req: SponsorsRequest; res: SponsorsResponse };
 	'stats': { req: EmptyRequest; res: StatsResponse };
+	'stpv/reactions-stat': { req: StpvReactionsStatRequest; res: StpvReactionsStatResponse };
 	'sw/register': { req: SwRegisterRequest; res: SwRegisterResponse };
 	'sw/show-registration': { req: SwShowRegistrationRequest; res: SwShowRegistrationResponse };
 	'sw/unregister': { req: SwUnregisterRequest; res: EmptyResponse };

@@ -334,35 +334,42 @@ const headerActions = computed(() => {
 
 const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => ({
 	key: 'list:' + l.id,
+	filterKey: 'list:' + l.id,
 	title: l.name,
 	icon: 'ti ti-star',
 	iconOnly: true,
 }))), ...availableBasicTimelines().map(tl => ({
 	key: tl,
+	filterKey: tl,
 	title: i18n.ts._timelines[tl],
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
 })), {
 	icon: 'ph-user-check ph-bold ph-lg',
 	title: i18n.ts.following,
+	filterKey: 'following',
 	iconOnly: true,
 	onClick: () => router.push('/following-feed'),
 }, {
 	icon: 'ti ti-list',
 	title: i18n.ts.lists,
+	filterKey: 'lists',
 	iconOnly: true,
 	onClick: chooseList,
 }, {
 	icon: 'ti ti-antenna',
 	title: i18n.ts.antennas,
+	filterKey: 'antennas',
 	iconOnly: true,
 	onClick: chooseAntenna,
 }, {
 	icon: 'ti ti-device-tv',
 	title: i18n.ts.channel,
+	filterKey: 'channel',
 	iconOnly: true,
 	onClick: chooseChannel,
-}] as Tab[]);
+}]
+	.filter(tab => !store.r.stpvDisabledTimelineSwipes.value.includes(tab.filterKey as never)) as Tab[]);
 
 const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(tl => ({
 	key: tl,

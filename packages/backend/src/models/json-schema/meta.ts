@@ -363,6 +363,11 @@ export const packedMetaLiteSchema = {
 				optional: false, nullable: false,
 			},
 		},
+		stpvAprilFoolsEnabled: {
+			type: 'boolean',
+			optional: true,
+			nullable: true,
+		},
 		maxFileSize: {
 			type: 'number',
 			optional: false, nullable: false,

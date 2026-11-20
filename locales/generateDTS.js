@@ -63,8 +63,10 @@ export default function generateDTS() {
 	/** @type {ILocale} */
 	const sharkeyLocale = loadOptionalYaml('../sharkey-locales/en-US.yml');
 	/** @type {ILocale} */
+	const hammoeLocale = loadOptionalYaml('../hammoe-locales/en-US.yml');
+	/** @type {ILocale} */
 	const misskeyLocale = loadOptionalYaml('ja-JP.yml');
-	const locale = merge(misskeyLocale, sharkeyLocale);
+	const locale = merge(misskeyLocale, sharkeyLocale, hammoeLocale);
 
 	const members = createMembers(locale);
 	const elements = [
