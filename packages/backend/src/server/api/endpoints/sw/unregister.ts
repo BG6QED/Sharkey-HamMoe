@@ -27,8 +27,10 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		endpoint: { type: 'string' },
+		auth: { type: 'string' },
+		publickey: { type: 'string' },
 	},
-	required: ['endpoint'],
+	required: ['endpoint', 'auth', 'publickey'],
 } as const;
 
 @Injectable()
@@ -40,13 +42,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private pushNotificationService: PushNotificationService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			await this.swSubscriptionsRepository.delete({
+			const subscriptions = await this.swSubscriptionsRepository.findBy({
 				...(me ? { userId: me.id } : {}),
 				endpoint: ps.endpoint,
+				auth: ps.auth,
+				publickey: ps.publickey,
 			});
 
-			if (me) {
-				await this.pushNotificationService.refreshCache(me.id);
+			if (subscriptions.length === 0) return;
+
+			await this.swSubscriptionsRepository.delete(subscriptions.map(s => s.id));
+
+			for (const userId of new Set(subscriptions.map(s => s.userId))) {
+				await this.pushNotificationService.refreshCache(userId);
 			}
 		});
 	}

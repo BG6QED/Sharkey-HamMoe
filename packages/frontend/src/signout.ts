@@ -10,6 +10,7 @@ import { waiting } from '@/os.js';
 import { unisonReload } from '@/utility/unison-reload.js';
 import { clear } from '@/utility/idb-proxy.js';
 import { $i } from '@/i.js';
+import { encodePushSubscriptionKey } from '@/utility/encode-push-subscription-key.js';
 
 export async function signout() {
 	if (!$i) return;
@@ -57,10 +58,11 @@ export async function signout() {
 					method: 'POST',
 					body: JSON.stringify({
 						endpoint: push.endpoint,
+						auth: encodePushSubscriptionKey(push.getKey('auth')),
+						publickey: encodePushSubscriptionKey(push.getKey('p256dh')),
 					}),
 					headers: {
 						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${$i.token}`,
 					},
 				});
 			}
