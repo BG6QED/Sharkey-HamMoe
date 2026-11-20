@@ -169,16 +169,23 @@ export function applyTheme(theme: Theme, persist = true) {
 }
 
 export function compile(theme: Theme): Record<string, string> {
-	function getColor(val: string): tinycolor.Instance {
+	// 参照が循環した場合に再帰でスタックを破壊しないよう深さを制限する
+	const MAX_REFERENCE_DEPTH = 8;
+
+	function getColor(val: string, depth = 0): tinycolor.Instance {
+		if (depth > MAX_REFERENCE_DEPTH) {
+			console.warn('theme reference depth exceeded');
+			return tinycolor('#000');
+		}
 		if (val[0] === '@') { // ref (prop)
-			return getColor(theme.props[val.substring(1)]);
+			return getColor(theme.props[val.substring(1)], depth + 1);
 		} else if (val[0] === '$') { // ref (const)
-			return getColor(theme.props[val]);
+			return getColor(theme.props[val], depth + 1);
 		} else if (val[0] === ':') { // func
 			const parts = val.split('<');
 			const func = parts.shift().substring(1);
 			const arg = parseFloat(parts.shift());
-			const color = getColor(parts.join('<'));
+			const color = getColor(parts.join('<'), depth + 1);
 
 			switch (func) {
 				case 'darken': return color.darken(arg);
