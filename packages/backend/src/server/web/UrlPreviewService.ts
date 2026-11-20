@@ -371,17 +371,14 @@ export class UrlPreviewService {
 	}
 
 	private fetchSummary(url: string, meta: MiMeta, lang?: string): Promise<SummalyResult> {
-		const agent = this.config.proxy
-			? {
-				http: this.httpRequestService.httpAgent,
-				https: this.httpRequestService.httpsAgent,
-			}
-			: undefined;
-
+		// proxy 設定の有無にかかわらず、SSRF 対策済みの agent を必ず使う
 		return summaly(url, {
 			followRedirects: true,
 			lang: lang ?? 'ja-JP',
-			agent: agent,
+			agent: {
+				http: this.httpRequestService.httpAgent,
+				https: this.httpRequestService.httpsAgent,
+			},
 			userAgent: meta.urlPreviewUserAgent ?? undefined,
 			operationTimeout: meta.urlPreviewTimeout,
 			contentLengthLimit: meta.urlPreviewMaximumContentLength,
