@@ -1,5 +1,9 @@
 @charset "utf-8";
 
+// HamMoe Plus: 默认字体预置（Arial / Times / Roboto / BIZ UDGothic / system-ui / 自定义）的规则都在这里，
+// 必须随主样式表一起加载，否则这些字体选项选了也没有效果。
+@use "./styles-font/sharkey-default.scss";
+
 @font-face {
 	font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
 	font-family: 'Lexend';

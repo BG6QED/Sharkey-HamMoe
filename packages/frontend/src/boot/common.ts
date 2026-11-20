@@ -25,7 +25,7 @@ import { getAccountFromId } from '@/utility/get-account-from-id.js';
 import { deckStore } from '@/ui/deck/deck-store.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { fetchCustomEmojis } from '@/custom-emojis.js';
-import { loadFontStyle } from '@/utility/load-font.js';
+import { applyDefaultFont } from '@/utility/load-font.js';
 import { prefer } from '@/preferences.js';
 import { $i } from '@/i.js';
 
@@ -241,6 +241,14 @@ export async function common(createVue: () => Promise<App<Element>>) {
 		window.document.documentElement.classList.add('forceSelectableAll');
 	}
 
+	//#region HamMoe Plus 默认字体
+	// 必须在首屏渲染前恢复 `default-font-*` 类：字体样式表的规则都挂在这个类上，
+	// 只动态导入 CSS 而不加类的话，刷新后字体会回退到默认字体。
+	// 未设置过字体时，中文环境默认使用猫啃糖圆（与上游 Stelpolva 行为一致）。
+	const storedFontFace = miLocalStorage.getItem('defaultFontFace');
+	void applyDefaultFont(storedFontFace || (window.navigator.language.includes('zh') ? 'maokentangyuan' : null));
+	//#endregion
+
 	//#region Fetch user
 	if ($i && $i.token) {
 		if (_DEV_) {
@@ -325,15 +333,6 @@ export async function common(createVue: () => Promise<App<Element>>) {
 	window.onunhandledrejection = null;
 
 	removeSplash();
-
-	//#region Load default font (HamMoe Plus)
-	const def_arr = miLocalStorage.getItem('defaultFontFace')?.split('_');
-	const fontId = def_arr?.[0];
-	if (fontId) {
-		loadFontStyle(fontId);
-	} else if (window.navigator.language.includes('zh')) {
-		loadFontStyle('maokentangyuan');
-	}
 
 	//#region Self-XSS 対策メッセージ
 	if (!_DEV_) {
