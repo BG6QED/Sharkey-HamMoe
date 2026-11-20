@@ -990,7 +990,18 @@ export class QueueService implements OnModuleInit, OnApplicationBootstrap {
 	}
 
 	@bindThis
-	private packJobData(job: Bull.Job) {
+	private redactJobData<T>(queueType: QueueType, data: T): T {
+		// Webhook の secret が管理画面のジョブ一覧から見えてしまうため伏せる
+		if (queueType === 'userWebhookDeliver' || queueType === 'systemWebhookDeliver') {
+			if (typeof data === 'object' && data != null && 'secret' in data) {
+				return { ...data, secret: '(redacted)' } as T;
+			}
+		}
+		return data;
+	}
+
+	@bindThis
+	private packJobData(queueType: QueueType, job: Bull.Job) {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		const stacktrace = job.stacktrace ? job.stacktrace.filter(Boolean) : [];
 		stacktrace.reverse();
@@ -998,7 +1009,7 @@ export class QueueService implements OnModuleInit, OnApplicationBootstrap {
 		return {
 			id: job.id,
 			name: job.name,
-			data: job.data,
+			data: this.redactJobData(queueType, job.data),
 			opts: job.opts,
 			timestamp: job.timestamp,
 			processedOn: job.processedOn,
@@ -1019,7 +1030,7 @@ export class QueueService implements OnModuleInit, OnApplicationBootstrap {
 		const queue = this.getQueue(queueType);
 		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
-			return this.packJobData(job);
+			return this.packJobData(queueType, job);
 		} else {
 			throw new Error(`Job not found: ${jobId}`);
 		}
@@ -1032,23 +1043,20 @@ export class QueueService implements OnModuleInit, OnApplicationBootstrap {
 		let jobs: (Bull.Job | null)[];
 
 		if (search) {
-			jobs = await queue.getJobs(jobTypes, 0, 1000);
+			const packed = (await queue.getJobs(jobTypes, 0, 1000))
+				.filter(job => job != null)
+				.map(job => this.packJobData(queueType, job));
 
-			jobs = jobs.filter(job => {
+			// 秘匿値を検索対象に含めると部分一致で推測できてしまうため、伏せた後のデータで検索する
+			return packed.filter(job => {
 				const jobString = JSON.stringify(job).toLowerCase();
-				return search.toLowerCase().split(' ').every(term => {
-					return jobString.includes(term);
-				});
-			});
-
-			jobs = jobs.slice(0, RETURN_LIMIT);
-		} else {
-			jobs = await queue.getJobs(jobTypes, 0, RETURN_LIMIT);
+				return search.toLowerCase().split(' ').every(term => jobString.includes(term));
+			}).slice(0, RETURN_LIMIT);
 		}
 
-		return jobs
-			.filter(job => job != null) // not sure how this happens, but it does
-			.map(job => this.packJobData(job));
+		return (await queue.getJobs(jobTypes, 0, RETURN_LIMIT))
+			.filter(job => job != null)
+			.map(job => this.packJobData(queueType, job));
 	}
 
 	@bindThis
