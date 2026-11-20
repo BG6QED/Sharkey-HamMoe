@@ -786,3 +786,7 @@ _followApprovalDuration:
 
 removeFromAntenna: "Remove from antenna"
 removeNoteFromAntennaConfirm: "Remove this note from the antenna \"{name}\""
+
+_search:
+  postFrom: "Date posted from"
+  postTo: "Date posted to"

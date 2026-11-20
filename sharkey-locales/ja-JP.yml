@@ -406,3 +406,7 @@ _announcement:
 
 removeFromAntenna: "アンテナから削除"
 removeNoteFromAntennaConfirm: "「{name}」のアンテナからこのノートを削除しますか？"
+
+_search:
+  postFrom: "投稿日時（開始）"
+  postTo: "投稿日時（終了）"

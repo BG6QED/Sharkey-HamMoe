@@ -12087,6 +12087,14 @@ export interface Locale extends ILocale {
          * 例: misskey.example.com
          */
         "serverHostPlaceholder": string;
+        /**
+         * Date posted from
+         */
+        "postFrom": string;
+        /**
+         * Date posted to
+         */
+        "postTo": string;
     };
     /**
      * Approvals

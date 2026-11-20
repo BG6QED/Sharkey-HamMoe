@@ -759,3 +759,7 @@ _followApprovalDuration:
 
 removeFromAntenna: "从天线中移除"
 removeNoteFromAntennaConfirm: "要从天线「{name}」中移除此帖子吗？"
+
+_search:
+  postFrom: "起始时间"
+  postTo: "结束时间"

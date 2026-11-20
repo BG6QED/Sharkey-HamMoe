@@ -19,6 +19,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<template #header>{{ i18n.ts.options }}</template>
 
 			<div class="_gaps_m">
+				<div style="display: flex; gap: 8px;">
+					<MkInput v-model="rangeStartAt" type="datetime-local">
+						<template #label>{{ i18n.ts._search.postFrom }}</template>
+					</MkInput>
+					<MkInput v-model="rangeEndAt" type="datetime-local">
+						<template #label>{{ i18n.ts._search.postTo }}</template>
+					</MkInput>
+				</div>
+
 				<MkRadios v-model="searchScope">
 					<option v-if="instance.federation !== 'none' && noteSearchableScope === 'global'" value="all">{{ i18n.ts._search.searchScopeAll }}</option>
 					<option value="local">{{ instance.federation === 'none' ? i18n.ts._search.searchScopeAll : i18n.ts._search.searchScopeLocal }}</option>
@@ -164,6 +173,8 @@ const searchQuery = ref(toRef(props, 'query').value);
 const hostInput = ref(toRef(props, 'host').value);
 const order = ref(false);
 const filetype = ref<'image' | 'video' | 'audio' | 'module' | 'flash' | null>(null);
+const rangeStartAt = ref<string | null>(null);
+const rangeEndAt = ref<string | null>(null);
 
 const user = shallowRef<Misskey.entities.UserDetailed | null>(null);
 
@@ -322,6 +333,8 @@ async function search() {
 			...searchParams.value,
 			order: order.value ? 'desc' : 'asc',
 			filetype: filetype.value,
+			rangeStartAt: rangeStartAt.value ? new Date(rangeStartAt.value).getTime() : null,
+			rangeEndAt: rangeEndAt.value ? new Date(rangeEndAt.value).getTime() : null,
 		},
 	};
 
