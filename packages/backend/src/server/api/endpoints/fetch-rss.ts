@@ -216,34 +216,33 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			xmlMode: true,
 		});
 
-			if (!feed) {
-				throw new ApiError(meta.errors.fetchFailed);
-			}
+		if (!feed) {
+			throw new ApiError(meta.errors.fetchFailed);
+		}
 
-			return {
-				type: feed.type,
-				id: feed.id,
-				title: feed.title,
-				link: feed.link,
-				description: feed.description,
-				updated: feed.updated?.toISOString(),
-				author: feed.author,
-				items: feed.items
-					.filter((item): item is FeedItem & { link: string, title: string } => !!item.link && !!item.title)
-					.map(item => ({
-						guid: item.id,
-						title: item.title,
-						link: item.link,
-						description: item.description,
-						pubDate: item.pubDate?.toISOString(),
-						media: item.media.map(media => ({
-							medium: media.medium,
-							url: media.url,
-							type: media.type,
-							lang: media.lang,
-						})),
+		return {
+			type: feed.type,
+			id: feed.id,
+			title: feed.title,
+			link: feed.link,
+			description: feed.description,
+			updated: feed.updated?.toISOString(),
+			author: feed.author,
+			items: feed.items
+				.filter((item): item is FeedItem & { link: string, title: string } => !!item.link && !!item.title)
+				.map(item => ({
+					guid: item.id,
+					title: item.title,
+					link: item.link,
+					description: item.description,
+					pubDate: item.pubDate?.toISOString(),
+					media: item.media.map(media => ({
+						medium: media.medium,
+						url: media.url,
+						type: media.type,
+						lang: media.lang,
 					})),
-			};
-		});
+				})),
+		};
 	}
 }
