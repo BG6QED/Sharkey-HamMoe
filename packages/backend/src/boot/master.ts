@@ -47,7 +47,7 @@ function greet(bootLogger: Logger) {
 		bootLogger.info(`--- ${os.hostname()} ${chalk.grey(`(PID: ${process.pid.toString()})`)} ---`);
 	}
 
-	bootLogger.info('Welcome to Sharkey-HamMoe!');
+	bootLogger.info('Welcome to Sharkey!');
 	bootLogger.info(`Sharkey-HamMoe v${meta.gitVersion ?? meta.version}`, null, true);
 }
 
@@ -91,7 +91,7 @@ export async function masterMain(bootLogger?: Logger) {
 			maxBreadcrumbs: 0,
 
 			// Set release version
-			release: 'Sharkey-HamMoe@' + (meta.gitVersion ?? meta.version),
+			release: 'Sharkey@' + (meta.gitVersion ?? meta.version),
 
 			...config.sentryForBackend.options,
 		});
