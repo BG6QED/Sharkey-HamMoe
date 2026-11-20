@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { normalizeForSearch } from '@/misc/normalize-for-search.js';
+import { normalizeTag } from '@/misc/normalize-tag.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { bindThis } from '@/decorators.js';
@@ -43,7 +43,7 @@ class HashtagChannel extends NoteChannel {
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
 		const noteTags = note.tags ? note.tags.map((t: string) => t.toLowerCase()) : [];
-		const matched = this.q.some(tags => tags.every(tag => noteTags.includes(normalizeForSearch(tag))));
+		const matched = this.q.some(tags => tags.every(tag => noteTags.includes(normalizeTag(tag))));
 		if (!matched) return;
 
 		const preparedNote = await this.prepareNote(note);

@@ -12,7 +12,7 @@ import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mf
 import { extractHashtags } from '@/misc/extract-hashtags.js';
 import { concat } from '@/misc/prelude/array.js';
 import { isRemoteUser, isLocalUser } from '@/models/User.js';
-import { normalizeForSearch } from '@/misc/normalize-for-search.js';
+import { normalizeTag } from '@/misc/normalize-tag.js';
 import { bindThis } from '@/decorators.js';
 import { isReply } from '@/misc/is-reply.js';
 import { isPureRenote } from '@/misc/is-renote.js';
@@ -522,7 +522,7 @@ export class NoteEditService implements OnApplicationShutdown {
 				text: data.text,
 				hasPoll: data.poll != null,
 				cw: data.cw ?? null,
-				tags: tags.map(tag => normalizeForSearch(tag)),
+				tags: tags.map(tag => normalizeTag(tag)),
 				emojis,
 				reactions: oldNote.reactions,
 				userId: user.id,
