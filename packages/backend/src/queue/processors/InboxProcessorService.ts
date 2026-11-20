@@ -222,6 +222,8 @@ export class InboxProcessorService {
 
 				activity.signature = ldSignature;
 
+				jsonLd.freeze();
+
 				// LD-Signature検証
 				let verified;
 				try {

@@ -64,6 +64,18 @@ export class JsonLdForbiddenDriectiveError extends JsonLdError {
 	}
 }
 
+export class JsonLdCacheOverflowError extends JsonLdError {
+	constructor() {
+		super('42fb039c-69fb-4f75-8187-d3aee412423e', 'context cache overflow');
+	}
+}
+
+export class JsonLdCacheFrozenError extends JsonLdError {
+	constructor() {
+		super('202c41fa-72d5-4e22-95af-94a8ac83346f', 'attempt to insert into frozen context cache');
+	}
+}
+
 export class JsonLd {
 	private static forbiddenDirectives = new Set([
 		'@included',
@@ -72,6 +84,8 @@ export class JsonLd {
 	]);
 
 	private readonly logger: Logger;
+	private frozen = false;
+	private readonly cache = new Map<string, any>();
 
 	constructor(
 		private httpRequestService: HttpRequestService,
@@ -166,6 +180,11 @@ export class JsonLd {
 	}
 
 	@bindThis
+	public freeze(): void {
+		this.frozen = true;
+	}
+
+	@bindThis
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	public checkForForbiddenDirectives(value: any): void {
 		if (typeof value === 'object') {
@@ -202,13 +221,25 @@ export class JsonLd {
 				}
 			}
 
+			const cached = this.cache.get(url);
+			if (cached) {
+				this.logger.debug(`Context cache HIT: ${url}`);
+				return cached;
+			}
+
 			this.logger.debug(`Preload MISS: ${url}`);
+			if (this.frozen) throw new JsonLdCacheFrozenError();
+
 			const document = await this.fetchDocument(url);
-			return {
+			this.checkForForbiddenDirectives(document);
+			const remoteDocument = {
 				contextUrl: undefined,
 				document: document,
 				documentUrl: url,
 			};
+			this.cache.set(url, remoteDocument);
+			if (this.cache.size > 256) throw new JsonLdCacheOverflowError();
+			return remoteDocument;
 		};
 	}
 
