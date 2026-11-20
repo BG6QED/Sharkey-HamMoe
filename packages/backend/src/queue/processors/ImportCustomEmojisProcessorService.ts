@@ -12,6 +12,7 @@ import type { EmojisRepository, DriveFilesRepository } from '@/models/_.js';
 import type Logger from '@/logger.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { createTempDir } from '@/misc/create-temp.js';
+import { assertSafeZipEntries } from '@/misc/zip-guard.js';
 import { DriveService } from '@/core/DriveService.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import { DownloadService } from '@/core/DownloadService.js';
@@ -77,7 +78,12 @@ export class ImportCustomEmojisProcessorService {
 		const outputPath = path + '/emojis';
 		try {
 			this.logger.debug(`Unzipping to ${outputPath}`);
-			ZipReader.withDestinationPath(outputPath).viaBuffer(await fs.promises.readFile(destPath));
+			const zipBuffer = await fs.promises.readFile(destPath);
+			// 展開前に危険なエントリ (パストラバーサル / symlink / 過大なサイズ) を検査する
+			assertSafeZipEntries(zipBuffer, {
+				maxTotalBytes: this.config.import?.maxFileSize ?? 262144000,
+			});
+			ZipReader.withDestinationPath(outputPath).viaBuffer(zipBuffer);
 			const metaRaw = fs.readFileSync(outputPath + '/meta.json', 'utf-8');
 			const meta = JSON.parse(metaRaw);
 
