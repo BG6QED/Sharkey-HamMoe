@@ -13,7 +13,8 @@ import { ApiError } from '@/server/api/error.js';
 export const meta = {
 	tags: ['federation'],
 
-	requireCredential: false,
+	requireCredential: true,
+	kind: 'read:account',
 
 	errors: {
 		noSuchUser: {
