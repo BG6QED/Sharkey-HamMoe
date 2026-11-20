@@ -37,6 +37,7 @@ import MkContainer from '@/components/MkContainer.vue';
 import { shuffle } from '@/utility/shuffle.js';
 import { url as base } from '@@/js/config.js';
 import { useInterval } from '@@/js/use-interval.js';
+import { tryParseUrl } from '@@/js/url.js';
 
 const name = 'rssTicker';
 
@@ -113,11 +114,13 @@ const tick = () => {
 	window.fetch(fetchEndpoint.value, {})
 		.then(res => res.json())
 		.then((feed: Misskey.entities.FetchRssResponse) => {
-			rawItems.value = feed.items.filter((item) => {
-				if (!item.link) return false;
-				const itemUrl = new URL(item.link);
-				return ['http:', 'https:'].includes(itemUrl.protocol);
-			});
+			rawItems.value = feed.items.flatMap((item) => {
+				if (!item.link) return [];
+				const itemUrl = tryParseUrl(item.link, base);
+				if (itemUrl == null || !['http:', 'https:'].includes(itemUrl.protocol)) return [];
+				// 検証済みの絶対 URL に置き換える
+				return [{ ...item, link: itemUrl.href }];
+			};)
 			fetching.value = false;
 			key.value++;
 		});

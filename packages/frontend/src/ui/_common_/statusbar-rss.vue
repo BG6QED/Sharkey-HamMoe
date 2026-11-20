@@ -30,7 +30,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import MarqueeText from '@/components/MkMarquee.vue';
+import { url as base } from '@@/js/config.js';
 import { useInterval } from '@@/js/use-interval.js';
+import { tryParseUrl } from '@@/js/url.js';
 import { shuffle } from '@/utility/shuffle.js';
 
 const props = defineProps<{
@@ -53,11 +55,13 @@ const tick = () => {
 			if (props.shuffle) {
 				shuffle(feed.items);
 			}
-			items.value = feed.items.filter((item) => {
-				if (!item.link) return false;
-				const itemUrl = new URL(item.link);
-				return ['http:', 'https:'].includes(itemUrl.protocol);
-			});
+			items.value = feed.items.flatMap((item) => {
+				if (!item.link) return [];
+				const itemUrl = tryParseUrl(item.link, base);
+				if (itemUrl == null || !['http:', 'https:'].includes(itemUrl.protocol)) return [];
+				// 検証済みの絶対 URL に置き換える
+				return [{ ...item, link: itemUrl.href }];
+			};)
 			fetching.value = false;
 			key.value++;
 		});
