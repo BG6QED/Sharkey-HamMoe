@@ -455,7 +455,7 @@ export class ApPersonService implements OnModuleInit {
 					isLocked: person.manuallyApprovesFollowers,
 					movedToUri: person.movedTo,
 					movedAt: person.movedTo ? this.timeService.date : null,
-					alsoKnownAs: person.alsoKnownAs,
+					alsoKnownAs: toArray(person.alsoKnownAs),
 					// We use "!== false" to handle incorrect types, missing / null values, and "default to true" logic.
 					hideOnlineStatus: person.hideOnlineStatus !== false,
 					isExplorable: person.discoverable !== false,
@@ -690,7 +690,7 @@ export class ApPersonService implements OnModuleInit {
 			enableRss: person.enableRss === true,
 			isLocked: person.manuallyApprovesFollowers,
 			movedToUri: person.movedTo ?? null,
-			alsoKnownAs: person.alsoKnownAs ?? null,
+			alsoKnownAs: person.alsoKnownAs ? toArray(person.alsoKnownAs) : null,
 			// We use "!== false" to handle incorrect types, missing / null values, and "default to true" logic.
 			hideOnlineStatus: person.hideOnlineStatus !== false,
 			isExplorable: person.discoverable !== false,

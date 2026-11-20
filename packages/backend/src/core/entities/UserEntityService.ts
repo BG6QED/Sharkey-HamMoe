@@ -61,6 +61,7 @@ import type { CacheService, UserRelation } from '@/core/CacheService.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { NoteEntityService } from './NoteEntityService.js';
 import type { PageEntityService } from './PageEntityService.js';
+import { toArray } from '@/misc/prelude/array.js';
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -251,12 +252,13 @@ export class UserEntityService implements OnModuleInit {
 			return null;
 		}
 
-		const akaUsers = new Map(await this.cacheService.uriPersonCache.fetchMany(user.alsoKnownAs));
+		const akaUris = toArray(user.alsoKnownAs as any);
+		const akaUsers = new Map(await this.cacheService.uriPersonCache.fetchMany(akaUris));
 		if (akaUsers.size < 1) {
 			return null;
 		}
 
-		return user.alsoKnownAs.map(uri => ({
+		return akaUris.map(uri => ({
 			uri,
 			id: akaUsers.get(uri) ?? null,
 		}));
