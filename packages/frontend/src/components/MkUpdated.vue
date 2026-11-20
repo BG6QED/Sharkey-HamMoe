@@ -21,13 +21,29 @@ import MkModal from '@/components/MkModal.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkSparkle from '@/components/MkSparkle.vue';
 import { i18n } from '@/i18n.js';
+import { instance } from '@/instance.js';
 import { confetti } from '@/utility/confetti.js';
 
 const modal = useTemplateRef('modal');
 
+/**
+ * 更新情報のリンク先を組み立てる。
+ * リポジトリURLはサーバー側の設定（meta.repositoryUrl）に従う。
+ * 上流の URL を固定で使うと、独自バージョンを運用しているインスタンスでは
+ * 存在しないリリースページ（404）に飛んでしまうため。
+ */
+function getReleaseUrl(): string {
+	const repositoryUrl = instance.repositoryUrl?.replace(/\.git$/, '').replace(/\/+$/, '');
+	if (repositoryUrl) {
+		return `${repositoryUrl}/releases/tag/${encodeURIComponent(version)}`;
+	}
+	// リポジトリURLが未設定の場合はリリース一覧にフォールバック
+	return 'https://activitypub.software/TransFem-org/Sharkey/-/releases';
+}
+
 const whatIsNew = () => {
 	modal.value?.close();
-	window.open(`https://activitypub.software/TransFem-org/Sharkey/-/releases/${version}`, '_blank');
+	window.open(getReleaseUrl(), '_blank');
 };
 
 onMounted(() => {
