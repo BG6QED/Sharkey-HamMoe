@@ -10,6 +10,7 @@ import { DI } from '@/di-symbols.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { isSystemAccount } from '@/misc/is-system-account.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
 
@@ -55,6 +56,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userProfilesRepository: UserProfilesRepository,
 
 		private moderationLogService: ModerationLogService,
+		private roleService: RoleService,
 		private readonly internalEventService: InternalEventService,
 		private readonly userAuthService: UserAuthService,
 	) {
@@ -67,6 +69,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (this.serverSettings.rootUserId === user.id) {
 				throw new Error('cannot reset password of root');
+			}
+
+			// 管理者のパスワードをモデレーターがリセットできてしまうと権限昇格になるため拒否する
+			if (me.id !== user.id && await this.roleService.isAdministrator(user)) {
+				throw new Error('cannot reset password of administrator');
 			}
 
 			if (isSystemAccount(user)) {
