@@ -7,23 +7,11 @@ import * as fs from 'node:fs';
 
 const __dirname = import.meta.dirname;
 const packageJsonPath = __dirname + '/../package.json';
-import { execFileSync } from 'node:child_process';
-
-function callGit(args) {
-	return execFileSync('git', args, {
-		encoding: 'utf-8',
-	}).trim();
-}
 
 function getGitVersion(versionFromPackageJson) {
-	const thisTag = callGit(['tag', '--points-at', 'HEAD']);
-	if (thisTag) {
-		// we're building from a tag, we don't care about extra details
-		return null;
-	}
-
-	const commitId = callGit(['rev-parse', '--short', 'HEAD']);
-	return `${versionFromPackageJson}+g${commitId}`;
+	// Sharkey-HamMoe: use the clean version string without a git hash suffix,
+	// so the banner reads "Sharkey-HamMoe v2026.11.0".
+	return versionFromPackageJson;
 }
 
 function build() {
