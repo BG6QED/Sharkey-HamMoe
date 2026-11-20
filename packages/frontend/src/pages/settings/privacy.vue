@@ -33,6 +33,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</SearchMarker>
 		</MkDisableSection>
 
+		<SearchMarker :keywords="['follow', 'approval', 'new', 'account', 'age']">
+			<MkRadios v-model="followApprovalDuration" @update:modelValue="save()">
+				<template #label><SearchLabel>{{ i18n.ts.followApprovalByAccountAge }}</SearchLabel></template>
+				<template #caption><SearchKeyword>{{ i18n.ts.followApprovalByAccountAgeDescription }}</SearchKeyword></template>
+				<option value="disabled">{{ i18n.ts._followApprovalDuration.disabled }}</option>
+				<option value="h1">{{ i18n.ts._followApprovalDuration.h1 }}</option>
+				<option value="d1">{{ i18n.ts._followApprovalDuration.d1 }}</option>
+				<option value="d3">{{ i18n.ts._followApprovalDuration.d3 }}</option>
+				<option value="d7">{{ i18n.ts._followApprovalDuration.d7 }}</option>
+				<option value="d30">{{ i18n.ts._followApprovalDuration.d30 }}</option>
+			</MkRadios>
+		</SearchMarker>
+
 		<SearchMarker :keywords="['reaction', 'public']">
 			<MkSwitch v-model="publicReactions" @update:modelValue="save()">
 				<template #label><SearchLabel>{{ i18n.ts.makeReactionsPublic }}</SearchLabel></template>
@@ -262,6 +275,27 @@ const $i = ensureSignin();
 const isLocked = ref($i.isLocked);
 const carefulBot = ref($i.carefulBot);
 const autoAcceptFollowed = ref($i.autoAcceptFollowed);
+
+const FOLLOW_APPROVAL_SECONDS: Record<string, number> = {
+	disabled: 0,
+	h1: 60 * 60,
+	d1: 24 * 60 * 60,
+	d3: 3 * 24 * 60 * 60,
+	d7: 7 * 24 * 60 * 60,
+	d30: 30 * 24 * 60 * 60,
+};
+
+function secondsToDurationKey(seconds: number | null | undefined): string {
+	const sec = seconds ?? 0;
+	if (sec >= FOLLOW_APPROVAL_SECONDS.d30) return 'd30';
+	if (sec >= FOLLOW_APPROVAL_SECONDS.d7) return 'd7';
+	if (sec >= FOLLOW_APPROVAL_SECONDS.d3) return 'd3';
+	if (sec >= FOLLOW_APPROVAL_SECONDS.d1) return 'd1';
+	if (sec >= FOLLOW_APPROVAL_SECONDS.h1) return 'h1';
+	return 'disabled';
+}
+
+const followApprovalDuration = ref(secondsToDurationKey($i.followApprovalLocalSeconds));
 const noCrawle = ref($i.noCrawle);
 const preventAiLearning = ref($i.preventAiLearning);
 const noindex = ref($i.noindex);
@@ -325,6 +359,8 @@ function save() {
 		isLocked: !!isLocked.value,
 		carefulBot: !!carefulBot.value,
 		autoAcceptFollowed: !!autoAcceptFollowed.value,
+		followApprovalLocalSeconds: FOLLOW_APPROVAL_SECONDS[followApprovalDuration.value] ?? 0,
+		followApprovalRemoteSeconds: FOLLOW_APPROVAL_SECONDS[followApprovalDuration.value] ?? 0,
 		noCrawle: !!noCrawle.value,
 		preventAiLearning: !!preventAiLearning.value,
 		noindex: !!noindex.value,

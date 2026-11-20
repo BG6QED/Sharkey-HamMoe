@@ -31,8 +31,10 @@ import { UtilityService } from '@/core/UtilityService.js';
 import type { ThinUser } from '@/queue/types.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { EnvService } from '@/global/EnvService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
+import { shouldRequireFollowApproval } from '@/misc/should-require-follow-approval.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import type Logger from '../logger.js';
 
@@ -94,6 +96,7 @@ export class UserFollowingService implements OnModuleInit {
 		private readonly internalEventService: InternalEventService,
 		private readonly collapsedQueueService: CollapsedQueueService,
 		private readonly envService: EnvService,
+		private readonly timeService: TimeService,
 
 		loggerService: LoggerService,
 	) {
@@ -172,13 +175,23 @@ export class UserFollowingService implements OnModuleInit {
 			return;
 		}
 
+		const requiresAgeBasedApproval = this.userEntityService.isLocalUser(followee) && shouldRequireFollowApproval(
+			followeeProfile,
+			this.userEntityService.isRemoteUser(follower),
+			// リモートユーザーの場合、ID はこのサーバーがそのユーザーを最初に認識した時刻を表す
+			this.idService.parse(follower.id).date,
+			this.timeService.now,
+		);
+
 		// フォロー対象が鍵アカウントである or
+		// フォロー対象の設定でフォロワーのアカウント作成後の期間が不足している or
 		// フォロワーがBotであり、フォロー対象がBotからのフォローに慎重である or
 		// フォロワーがローカルユーザーであり、フォロー対象がリモートユーザーである or
 		// フォロワーがローカルユーザーであり、フォロー対象がサイレンスされているサーバーである
 		// 上記のいずれかに当てはまる場合はすぐフォローせずにフォローリクエストを発行しておく
 		if (
 			followee.isLocked ||
+			requiresAgeBasedApproval ||
 			(followeeProfile.carefulBot && follower.isBot) ||
 			(this.userEntityService.isLocalUser(follower) && this.userEntityService.isRemoteUser(followee) && this.envService.env.FORCE_FOLLOW_REMOTE_USER_FOR_TESTING !== 'true') ||
 			(this.userEntityService.isLocalUser(followee) && this.userEntityService.isRemoteUser(follower) && this.utilityService.isSilencedHost(this.meta.silencedHosts, follower.host))

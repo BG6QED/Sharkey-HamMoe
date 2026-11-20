@@ -23,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, ref, useTemplateRef } from 'vue';
+import { computed, watch, ref, provide, useTemplateRef } from 'vue';
 import * as Misskey from 'misskey-js';
 import { scrollInContainer } from '@@/js/scroll.js';
 import MkTimeline from '@/components/MkTimeline.vue';
@@ -43,6 +43,12 @@ const antenna = ref<Misskey.entities.Antenna | null>(null);
 const queue = ref(0);
 const rootEl = useTemplateRef('rootEl');
 const tlEl = useTemplateRef('tlEl');
+
+// ノートがアンテナから除去されたときにタイムラインからも即座に消す
+provide('currentAntenna', antenna);
+provide('antennaNoteRemoved', (noteId: string) => {
+	tlEl.value?.removeNote(noteId);
+});
 
 function queueUpdated(q) {
 	queue.value = q;

@@ -51,6 +51,7 @@ import type {
 	RelationshipJobData,
 	SystemJobData,
 	DaemonJobData,
+	ArchiveAnnouncementJobData,
 } from '@/queue/types.js';
 import { DI } from '@/di-symbols.js';
 import { promiseTry } from '@/misc/promise-try.js';
@@ -60,6 +61,8 @@ import { renderInlineError } from '@/misc/render-inline-error.js';
 import { renderFullError } from '@/misc/render-full-error.js';
 import { isRetryableError } from '@/misc/is-retryable-error.js';
 import { CheckModeratorsActivityProcessorService } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
+import { CleanRemoteNotesProcessorService } from '@/queue/processors/CleanRemoteNotesProcessorService.js';
+import { ArchiveAnnouncementProcessorService } from '@/queue/processors/ArchiveAnnouncementProcessorService.js';
 import { QueueStatsService } from '@/core/QueueStatsService.js';
 import { ServerStatsService } from '@/core/ServerStatsService.js';
 import { TimeService } from '@/global/TimeService.js';
@@ -184,6 +187,8 @@ export class QueueProcessorService implements OnApplicationBootstrap, BeforeAppl
 		private checkExpiredMutingsProcessorService: CheckExpiredMutingsProcessorService,
 		private bakeBufferedReactionsProcessorService: BakeBufferedReactionsProcessorService,
 		private checkModeratorsActivityProcessorService: CheckModeratorsActivityProcessorService,
+		private cleanRemoteNotesProcessorService: CleanRemoteNotesProcessorService,
+		private archiveAnnouncementProcessorService: ArchiveAnnouncementProcessorService,
 		private cleanProcessorService: CleanProcessorService,
 		private scheduleNotePostProcessorService: ScheduleNotePostProcessorService,
 		private readonly timeService: TimeService,
@@ -209,6 +214,15 @@ export class QueueProcessorService implements OnApplicationBootstrap, BeforeAppl
 					case 'checkExpiredMutings': return await this.checkExpiredMutingsProcessorService.process();
 					case 'bakeBufferedReactions': return await this.bakeBufferedReactionsProcessorService.process();
 					case 'checkModeratorsActivity': return await this.checkModeratorsActivityProcessorService.process();
+					case 'archiveAnnouncement': {
+						// job.data.type で判別済みだが、Worker の型は SystemJobData のままなので明示的に変換する
+						await this.archiveAnnouncementProcessorService.process(job as unknown as Bull.Job<ArchiveAnnouncementJobData>);
+						return;
+					}
+					case 'cleanRemoteNotes': {
+						await this.cleanRemoteNotesProcessorService.process(job);
+						return;
+					}
 					case 'clean': return await this.cleanProcessorService.process();
 					case 'cleanupApLogs': return await this.cleanupApLogsProcessorService.process();
 					case 'hibernateUsers': return await this.hibernateUsersProcessorService.process();

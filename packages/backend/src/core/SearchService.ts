@@ -105,6 +105,8 @@ export type SearchOpts = {
 	channelId?: MiNote['channelId'] | null;
 	host?: string | null;
 	filetype?: FileTypeCategory;
+	rangeStartAt?: number | null;
+	rangeEndAt?: number | null;
 	order?: string | null;
 	disableMeili?: boolean | null;
 };
@@ -311,6 +313,17 @@ export class SearchService {
 			query.andWhere('note."attachedFileTypes" && :types', { types: fileTypes[opts.filetype] });
 		}
 
+		// 投稿日時による期間指定（notes/search の rangeStartAt / rangeEndAt）
+		if (opts.rangeStartAt != null) {
+			const rangeStartId = this.idService.gen(opts.rangeStartAt - 1);
+			query.andWhere('note.id > :rangeStartId', { rangeStartId });
+		}
+
+		if (opts.rangeEndAt != null) {
+			const rangeEndId = this.idService.gen(opts.rangeEndAt + 1);
+			query.andWhere('note.id < :rangeEndId', { rangeEndId });
+		}
+
 		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateBlockedHostQueryForNote(query);
 		this.queryService.generateSuspendedUserQueryForNote(query);
@@ -360,6 +373,9 @@ export class SearchService {
 			const filters = fileTypes[opts.filetype].map(mime => ({ op: '=' as const, k: 'attachedFileTypes', v: mime }));
 			filter.qs.push({ op: 'or', qs: filters });
 		}
+
+		if (opts.rangeStartAt != null) filter.qs.push({ op: '>=', k: 'createdAt', v: opts.rangeStartAt });
+		if (opts.rangeEndAt != null) filter.qs.push({ op: '<=', k: 'createdAt', v: opts.rangeEndAt });
 
 		const res = await this.meilisearchNoteIndex.search(q, {
 			sort: [`createdAt:${opts.order ? opts.order : 'desc'}`],

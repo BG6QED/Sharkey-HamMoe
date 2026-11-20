@@ -781,6 +781,21 @@ export class MiMeta {
 	})
 	public enableProxyAccount: boolean;
 
+	@Column('boolean', {
+		default: false,
+	})
+	public enableRemoteNotesCleaning: boolean;
+
+	@Column('integer', {
+		default: 60, // minutes
+	})
+	public remoteNotesCleaningMaxProcessingDurationInMinutes: number;
+
+	@Column('integer', {
+		default: 90, // days
+	})
+	public remoteNotesCleaningExpiryDaysForEachNotes: number;
+
 	@Column('jsonb', {
 		default: [],
 	})

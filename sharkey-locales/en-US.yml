@@ -220,6 +220,9 @@ _initialTutorial:
 _timelineDescription:
   bubble: "In the Bubble timeline, you can see notes from connected servers picked by your admins."
 _serverSettings:
+  remoteNotesCleaningDescription: "Periodically deletes remote posts older than the specified number of days to prevent the database from growing too large."
+  remoteNotesCleaningExpiryDays: "Days to keep remote posts"
+  remoteNotesCleaningMaxProcessingDuration: "Maximum processing time per run"
   sidebarLogoUrl: "Logo URL"
   sidebarLogoDescription: "Specifies the logo to use instead of the regular icon in high definition, dynamic-width scenarios."
   sidebarLogoUsageExample: "E.g. In the sidebar, to visitors and in the \"About\" page."
@@ -495,6 +498,8 @@ remoteFollowersWarning: "Remote followers may have incomplete or outdated activi
 _auth:
   allowed: "Allowed"
 _announcement:
+  autoArchiveAt: "Auto archive date"
+  autoArchiveAtDescription: "After this date, the announcement is archived automatically. Leave empty to disable."
   new: "New"
   onlyForRoles: "Restrict to roles"
   onlyForRolesChange: "Change role restrictions"
@@ -769,3 +774,15 @@ lastFetchedFeaturedAt: "Last fetched featured at"
 lastFetchedOutboxAt: "Last fetched outbox at"
 loginDates: "Login Dates"
 root: "Root"
+followApprovalByAccountAge: "Require approval for follows from new accounts"
+followApprovalByAccountAgeDescription: "Follows from users whose account is younger than the selected period will be treated as follow requests instead of being accepted automatically."
+_followApprovalDuration:
+  disabled: "Disabled"
+  h1: "1 hour"
+  d1: "1 day"
+  d3: "3 days"
+  d7: "7 days"
+  d30: "30 days"
+
+removeFromAntenna: "Remove from antenna"
+removeNoteFromAntennaConfirm: "Remove this note from the antenna \"{name}\""

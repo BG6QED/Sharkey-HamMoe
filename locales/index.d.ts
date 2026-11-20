@@ -6002,6 +6002,14 @@ export interface Locale extends ILocale {
          */
         "silenceDescription": string;
         /**
+         * Auto archive date
+         */
+        "autoArchiveAt": string;
+        /**
+         * After this date, the announcement is archived automatically. Leave empty to disable.
+         */
+        "autoArchiveAtDescription": string;
+        /**
          * New
          */
         "new": string;
@@ -6425,6 +6433,18 @@ export interface Locale extends ILocale {
          * You can specify a range of names and versions of the server's software to stop delivery for vulnerability or other reasons. This version information is provided by the server and is not guaranteed to be reliable. A semver range specification can be used to specify the version, but specifying >= 2024.3.1 will not include custom versions such as 2024.3.1-custom.0, so it is recommended that a prerelease specification be used, such as >= 2024.3.1-0. Specifying * will match any name or version, even when the server doesn't provide one. You can also provide a regular expression like /^sharkey-/i or /^1-/
          */
         "deliverSuspendedSoftwareDescription": string;
+        /**
+         * Periodically deletes remote posts older than the specified number of days to prevent the database from growing too large.
+         */
+        "remoteNotesCleaningDescription": string;
+        /**
+         * Days to keep remote posts
+         */
+        "remoteNotesCleaningExpiryDays": string;
+        /**
+         * Maximum processing time per run
+         */
+        "remoteNotesCleaningMaxProcessingDuration": string;
         /**
          * Logo URL
          */
@@ -13795,6 +13815,48 @@ export interface Locale extends ILocale {
      * Root
      */
     "root": string;
+    /**
+     * Require approval for follows from new accounts
+     */
+    "followApprovalByAccountAge": string;
+    /**
+     * Follows from users whose account is younger than the selected period will be treated as follow requests instead of being accepted automatically.
+     */
+    "followApprovalByAccountAgeDescription": string;
+    "_followApprovalDuration": {
+        /**
+         * Disabled
+         */
+        "disabled": string;
+        /**
+         * 1 hour
+         */
+        "h1": string;
+        /**
+         * 1 day
+         */
+        "d1": string;
+        /**
+         * 3 days
+         */
+        "d3": string;
+        /**
+         * 7 days
+         */
+        "d7": string;
+        /**
+         * 30 days
+         */
+        "d30": string;
+    };
+    /**
+     * Remove from antenna
+     */
+    "removeFromAntenna": string;
+    /**
+     * Remove this note from the antenna "{name}"
+     */
+    "removeNoteFromAntennaConfirm": ParameterizedString<"name">;
     /**
      * Sharkey HamMoe Edition adds additional keyword syntax to the antenna settings.
      * That means, the special keyword `domain:example.com` will match all posts from `example.com`. This keyword can also be used in OR syntax.

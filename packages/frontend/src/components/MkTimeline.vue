@@ -315,8 +315,13 @@ function reloadTimeline() {
 	});
 }
 
+function removeNote(noteId: string) {
+	pagingComponent.value?.removeItem(noteId);
+}
+
 defineExpose({
 	reloadTimeline,
+	removeNote,
 });
 </script>
 

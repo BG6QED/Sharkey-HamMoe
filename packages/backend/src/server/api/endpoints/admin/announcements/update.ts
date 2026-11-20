@@ -30,6 +30,11 @@ export const meta = {
 			code: 'DIALOG_LIMIT_EXCEEDED',
 			id: '1a5db7ca-6d3f-44bc-ac51-05cae93b643c',
 		},
+		invalidAutoArchiveAt: {
+			message: 'Invalid auto archive date.',
+			code: 'INVALID_AUTO_ARCHIVE_AT',
+			id: '01b83d7b-2fd5-4d7c-86c4-d03144d16355',
+		},
 	},
 } as const;
 
@@ -48,6 +53,7 @@ export const paramDef = {
 		needConfirmationToRead: { type: 'boolean' },
 		confetti: { type: 'boolean' },
 		isActive: { type: 'boolean' },
+		autoArchiveAt: { type: 'integer', nullable: true },
 	},
 	required: ['id'],
 } as const;
@@ -62,6 +68,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			const autoArchiveAt = ps.autoArchiveAt != null ? new Date(ps.autoArchiveAt) : ps.autoArchiveAt;
+			if (ps.autoArchiveAt != null && (ps.autoArchiveAt < 0 || Number.isNaN(autoArchiveAt?.getTime()))) {
+				throw new ApiError(meta.errors.invalidAutoArchiveAt);
+			}
+
 			const announcement = await this.announcementsRepository.findOneBy({ id: ps.id });
 
 			if (announcement == null) throw new ApiError(meta.errors.noSuchAnnouncement);
@@ -81,6 +92,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					needConfirmationToRead: ps.needConfirmationToRead,
 					confetti: ps.confetti,
 					isActive: ps.isActive,
+					autoArchiveAt,
 				}, me);
 			} catch (e) {
 				if (e instanceof IdentifiableError) {

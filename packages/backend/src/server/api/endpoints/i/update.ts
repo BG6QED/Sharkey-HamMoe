@@ -160,6 +160,9 @@ export const meta = {
 	},
 } as const;
 
+/** 上限は30日程度にしておく */
+const FOLLOW_APPROVAL_MAX_SECONDS = 30 * 24 * 60 * 60;
+
 const muteWords = { type: 'array', items: { oneOf: [
 	{ type: 'array', items: { type: 'string' } },
 	{ type: 'string' },
@@ -209,6 +212,8 @@ export const paramDef = {
 		publicReactions: { type: 'boolean' },
 		carefulBot: { type: 'boolean' },
 		autoAcceptFollowed: { type: 'boolean' },
+		followApprovalLocalSeconds: { type: 'integer', nullable: true, minimum: 0, maximum: FOLLOW_APPROVAL_MAX_SECONDS },
+		followApprovalRemoteSeconds: { type: 'integer', nullable: true, minimum: 0, maximum: FOLLOW_APPROVAL_MAX_SECONDS },
 		noCrawle: { type: 'boolean' },
 		preventAiLearning: { type: 'boolean' },
 		noindex: { type: 'boolean' },
@@ -409,6 +414,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (typeof ps.isBot === 'boolean') updates.isBot = ps.isBot;
 			if (typeof ps.carefulBot === 'boolean') profileUpdates.carefulBot = ps.carefulBot;
 			if (typeof ps.autoAcceptFollowed === 'boolean') profileUpdates.autoAcceptFollowed = ps.autoAcceptFollowed;
+			if (ps.followApprovalLocalSeconds !== undefined) profileUpdates.followApprovalLocalSeconds = ps.followApprovalLocalSeconds;
+			if (ps.followApprovalRemoteSeconds !== undefined) profileUpdates.followApprovalRemoteSeconds = ps.followApprovalRemoteSeconds;
 			if (typeof ps.noCrawle === 'boolean') profileUpdates.noCrawle = ps.noCrawle;
 			if (typeof ps.preventAiLearning === 'boolean') profileUpdates.preventAiLearning = ps.preventAiLearning;
 			if (typeof ps.requireSigninToViewContents === 'boolean') updates.requireSigninToViewContents = ps.requireSigninToViewContents;

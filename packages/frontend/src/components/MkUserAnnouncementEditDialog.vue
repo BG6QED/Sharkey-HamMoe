@@ -39,6 +39,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					{{ i18n.ts._announcement.needConfirmationToRead }}
 					<template #caption>{{ i18n.ts._announcement.needConfirmationToReadDescription }}</template>
 				</MkSwitch>
+				<MkInput v-model="autoArchiveAt" type="datetime-local">
+					<template #label>{{ i18n.ts._announcement.autoArchiveAt }}</template>
+					<template #caption>{{ i18n.ts._announcement.autoArchiveAtDescription }}</template>
+				</MkInput>
 				<MkButton v-if="announcement" danger @click="del()"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 			</div>
 		</div>
@@ -81,6 +85,17 @@ const icon = ref(props.announcement ? props.announcement.icon : 'info');
 const display = ref(props.announcement ? props.announcement.display : 'dialog');
 const needConfirmationToRead = ref(props.announcement ? props.announcement.needConfirmationToRead : false);
 
+/** ISO 文字列を datetime-local 入力用のローカル時刻文字列に変換する */
+function toLocalInputValue(iso: string | null | undefined): string {
+	if (!iso) return '';
+	const d = new Date(iso);
+	if (Number.isNaN(d.getTime())) return '';
+	const pad = (n: number) => n.toString().padStart(2, '0');
+	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+const autoArchiveAt = ref(toLocalInputValue((props.announcement as { autoArchiveAt?: string | null } | undefined)?.autoArchiveAt));
+
 async function done() {
 	const params = {
 		title: title.value,
@@ -90,6 +105,7 @@ async function done() {
 		display: display.value,
 		needConfirmationToRead: needConfirmationToRead.value,
 		userId: props.user.id,
+		autoArchiveAt: autoArchiveAt.value ? new Date(autoArchiveAt.value).getTime() : null,
 	} satisfies Misskey.entities.AdminAnnouncementsCreateRequest;
 
 	if (props.announcement) {

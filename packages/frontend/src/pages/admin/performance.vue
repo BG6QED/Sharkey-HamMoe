@@ -101,6 +101,33 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkSwitch>
 				</div>
 			</MkFolder>
+
+			<MkFolder :defaultOpen="true">
+				<template #icon><i class="ti ti-recycle"></i></template>
+				<template #label>Remote Notes Cleaning</template>
+				<template v-if="rncForm.savedState.enableRemoteNotesCleaning" #suffix>Enabled</template>
+				<template v-else #suffix>Disabled</template>
+				<template v-if="rncForm.modified.value" #footer>
+					<MkFormFooter :form="rncForm"/>
+				</template>
+
+				<div class="_gaps">
+					<MkSwitch v-model="rncForm.state.enableRemoteNotesCleaning">
+						<template #label>{{ i18n.ts.enable }}<span v-if="rncForm.modifiedStates.enableRemoteNotesCleaning" class="_modified">{{ i18n.ts.modified }}</span></template>
+						<template #caption>{{ i18n.ts._serverSettings.remoteNotesCleaningDescription }}</template>
+					</MkSwitch>
+
+					<template v-if="rncForm.state.enableRemoteNotesCleaning">
+						<MkInput v-model="rncForm.state.remoteNotesCleaningExpiryDaysForEachNotes" type="number">
+							<template #label>{{ i18n.ts._serverSettings.remoteNotesCleaningExpiryDays }}<span v-if="rncForm.modifiedStates.remoteNotesCleaningExpiryDaysForEachNotes" class="_modified">{{ i18n.ts.modified }}</span></template>
+						</MkInput>
+
+						<MkInput v-model="rncForm.state.remoteNotesCleaningMaxProcessingDurationInMinutes" type="number">
+							<template #label>{{ i18n.ts._serverSettings.remoteNotesCleaningMaxProcessingDuration }}<span v-if="rncForm.modifiedStates.remoteNotesCleaningMaxProcessingDurationInMinutes" class="_modified">{{ i18n.ts.modified }}</span></template>
+						</MkInput>
+					</template>
+				</div>
+			</MkFolder>
 		</div>
 	</div>
 </PageWithHeader>
@@ -192,6 +219,19 @@ const rbtForm = useForm({
 }, async (state) => {
 	await os.apiWithDialog('admin/update-meta', {
 		enableReactionsBuffering: state.enableReactionsBuffering,
+	});
+	fetchInstance(true);
+});
+
+const rncForm = useForm({
+	enableRemoteNotesCleaning: meta.enableRemoteNotesCleaning,
+	remoteNotesCleaningExpiryDaysForEachNotes: meta.remoteNotesCleaningExpiryDaysForEachNotes,
+	remoteNotesCleaningMaxProcessingDurationInMinutes: meta.remoteNotesCleaningMaxProcessingDurationInMinutes,
+}, async (state) => {
+	await os.apiWithDialog('admin/update-meta', {
+		enableRemoteNotesCleaning: state.enableRemoteNotesCleaning,
+		remoteNotesCleaningExpiryDaysForEachNotes: state.remoteNotesCleaningExpiryDaysForEachNotes,
+		remoteNotesCleaningMaxProcessingDurationInMinutes: state.remoteNotesCleaningMaxProcessingDurationInMinutes,
 	});
 	fetchInstance(true);
 });

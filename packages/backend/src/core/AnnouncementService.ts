@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Brackets, EntityNotFoundError } from 'typeorm';
+import { Inject, Injectable, type OnApplicationBootstrap } from '@nestjs/common';
+import { Brackets, EntityNotFoundError, IsNull, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
 import type { AnnouncementReadsRepository, AnnouncementsRepository, MiAnnouncement, MiAnnouncementRead, UsersRepository } from '@/models/_.js';
@@ -19,9 +19,10 @@ import type { Config } from '@/config.js';
 import { RoleService } from '@/core/RoleService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { CacheService } from '@/core/CacheService.js';
+import { QueueService } from '@/core/QueueService.js';
 
 @Injectable()
-export class AnnouncementService {
+export class AnnouncementService implements OnApplicationBootstrap {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
@@ -42,7 +43,22 @@ export class AnnouncementService {
 		private roleService: RoleService,
 		private readonly timeService: TimeService,
 		private readonly cacheService: CacheService,
+		private queueService: QueueService,
 	) {
+	}
+
+	@bindThis
+	public async onApplicationBootstrap(): Promise<void> {
+		// QueueService の初期化は onModuleInit で完了しているため、ここで予約を復元できる
+		// アップデート前に作成されたお知らせや Redis の再構築後にも予約を復元する
+		const announcements = await this.announcementsRepository.findBy({
+			isActive: true,
+			autoArchiveAt: Not(IsNull()),
+		});
+
+		await Promise.all(announcements.map(announcement =>
+			this.queueService.scheduleAnnouncementArchive(announcement.id, announcement.autoArchiveAt as Date),
+		));
 	}
 
 	@bindThis
@@ -59,8 +75,13 @@ export class AnnouncementService {
 			.where('read.userId = :userId', { userId: user.id });
 		const roles = await this.roleService.getUserRoles(user);
 
+		const now = this.timeService.date;
 		const q = this.announcementsRepository.createQueryBuilder('announcement')
 			.where('announcement.isActive = true')
+			.andWhere(new Brackets(qb => {
+				qb.where('announcement.autoArchiveAt IS NULL');
+				qb.orWhere('announcement.autoArchiveAt > :now', { now });
+			}))
 			.andWhere('announcement.silence = false')
 			.andWhere(new Brackets(qb => {
 				qb.orWhere('announcement.userId = :userId', { userId: user.id });
@@ -101,14 +122,23 @@ export class AnnouncementService {
 			needConfirmationToRead: values.needConfirmationToRead,
 			confetti: values.confetti,
 			userId: values.userId,
+			autoArchiveAt: values.autoArchiveAt ?? null,
+			isActive: values.isActive ?? (values.autoArchiveAt == null || values.autoArchiveAt > this.timeService.date),
 		});
 
 		const packed = await this.announcementEntityService.pack(announcement);
 
+		if (announcement.isActive && announcement.autoArchiveAt != null) {
+			await this.queueService.scheduleAnnouncementArchive(announcement.id, announcement.autoArchiveAt);
+		}
+
+		// 作成処理中に autoArchiveAt を過ぎる可能性があるため、非アクティブならイベント配信しない
 		if (values.userId) {
-			this.globalEventService.publishMainStream(values.userId, 'announcementCreated', {
-				announcement: packed,
-			});
+			if (announcement.isActive) {
+				this.globalEventService.publishMainStream(values.userId, 'announcementCreated', {
+					announcement: packed,
+				});
+			}
 
 			if (moderator) {
 				const user = await this.cacheService.findUserById(values.userId);
@@ -121,9 +151,11 @@ export class AnnouncementService {
 				});
 			}
 		} else {
-			this.globalEventService.publishBroadcastStream('announcementCreated', {
-				announcement: packed,
-			});
+			if (announcement.isActive) {
+				this.globalEventService.publishBroadcastStream('announcementCreated', {
+					announcement: packed,
+				});
+			}
 
 			if (moderator) {
 				this.moderationLogService.log(moderator, 'createGlobalAnnouncement', {
@@ -160,9 +192,20 @@ export class AnnouncementService {
 			needConfirmationToRead: values.needConfirmationToRead,
 			confetti: values.confetti,
 			isActive: values.isActive,
+			autoArchiveAt: values.autoArchiveAt,
 		});
 
 		const after = await this.announcementsRepository.findOneByOrFail({ id: announcement.id });
+
+		if (announcement.autoArchiveAt?.getTime() !== after.autoArchiveAt?.getTime() || announcement.isActive !== after.isActive) {
+			if (announcement.autoArchiveAt != null) {
+				await this.queueService.clearAnnouncementArchive(announcement.id, announcement.autoArchiveAt);
+			}
+
+			if (after.isActive && after.autoArchiveAt != null) {
+				await this.queueService.scheduleAnnouncementArchive(after.id, after.autoArchiveAt);
+			}
+		}
 
 		if (moderator) {
 			if (announcement.userId) {
@@ -186,8 +229,32 @@ export class AnnouncementService {
 	}
 
 	@bindThis
+	public async archiveAnnouncement(announcementId: MiAnnouncement['id'], autoArchiveAt: Date): Promise<boolean> {
+		const now = this.timeService.date;
+
+		// 日時も照合し、日時変更前に予約された古いジョブがお知らせをアーカイブしないようにする
+		const result = await this.announcementsRepository.createQueryBuilder()
+			.update()
+			.set({
+				isActive: false,
+				updatedAt: now,
+			})
+			.where('id = :announcementId', { announcementId })
+			.andWhere('isActive = true')
+			.andWhere('autoArchiveAt = :autoArchiveAt', { autoArchiveAt })
+			.andWhere('autoArchiveAt <= :now', { now })
+			.execute();
+
+		return (result.affected ?? 0) > 0;
+	}
+
+	@bindThis
 	public async delete(announcement: MiAnnouncement, moderator?: MiUser): Promise<void> {
 		await this.announcementsRepository.delete(announcement.id);
+
+		if (announcement.autoArchiveAt != null) {
+			await this.queueService.clearAnnouncementArchive(announcement.id, announcement.autoArchiveAt);
+		}
 
 		if (moderator) {
 			if (announcement.userId) {

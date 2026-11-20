@@ -232,6 +232,9 @@ export const paramDef = {
 			type: 'boolean',
 			nullable: false,
 		},
+		enableRemoteNotesCleaning: { type: 'boolean' },
+		remoteNotesCleaningMaxProcessingDurationInMinutes: { type: 'number' },
+		remoteNotesCleaningExpiryDaysForEachNotes: { type: 'number' },
 		deliverSuspendedSoftware: {
 			type: 'array',
 			items: {
@@ -808,6 +811,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.enableProxyAccount !== undefined) {
 				set.enableProxyAccount = ps.enableProxyAccount;
+			}
+
+			if (ps.enableRemoteNotesCleaning !== undefined) {
+				set.enableRemoteNotesCleaning = ps.enableRemoteNotesCleaning;
+			}
+
+			if (ps.remoteNotesCleaningMaxProcessingDurationInMinutes !== undefined) {
+				set.remoteNotesCleaningMaxProcessingDurationInMinutes = ps.remoteNotesCleaningMaxProcessingDurationInMinutes;
+			}
+
+			if (ps.remoteNotesCleaningExpiryDaysForEachNotes !== undefined) {
+				set.remoteNotesCleaningExpiryDaysForEachNotes = ps.remoteNotesCleaningExpiryDaysForEachNotes;
 			}
 
 			// Save changes

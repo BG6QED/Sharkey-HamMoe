@@ -203,6 +203,8 @@ export function getNoteMenu(props: {
 	translating: Ref<boolean>;
 	isDeleted: Ref<boolean>;
 	currentClip?: Misskey.entities.Clip;
+	currentAntenna?: Misskey.entities.Antenna | null;
+	onAntennaNoteRemoved?: (noteId: string) => void;
 }) {
 	const appearNote = getAppearNote(props.note);
 
@@ -307,6 +309,19 @@ export function getNoteMenu(props: {
 		if (!props.currentClip) return;
 		os.apiWithDialog('clips/remove-note', { clipId: props.currentClip.id, noteId: appearNote.id });
 		props.isDeleted.value = true;
+	}
+
+	async function removeFromAntenna(): Promise<void> {
+		if (!props.currentAntenna) return;
+
+		const { canceled } = await os.confirm({
+			type: 'warning',
+			text: i18n.tsx.removeNoteFromAntennaConfirm({ name: props.currentAntenna.name }),
+		});
+		if (canceled) return;
+
+		await os.apiWithDialog('antennas/remove-note', { antennaId: props.currentAntenna.id, noteId: appearNote.id });
+		props.onAntennaNoteRemoved?.(appearNote.id);
 	}
 
 	async function promote(): Promise<void> {
@@ -550,6 +565,14 @@ export function getNoteMenu(props: {
 					action: delEdit,
 				});
 			}
+			if (props.currentAntenna != null) {
+				menuItems.push({
+					icon: 'ti ti-trash',
+					text: i18n.ts.removeFromAntenna,
+					danger: true,
+					action: removeFromAntenna,
+				});
+			}
 			menuItems.push({
 				icon: 'ph-eye-slash ph-bold ph-lg',
 				text: i18n.ts.makePrivate.text,
@@ -561,6 +584,14 @@ export function getNoteMenu(props: {
 				text: i18n.ts.delete,
 				danger: true,
 				action: del,
+			});
+		} else if (props.currentAntenna != null) {
+			menuItems.push({ type: 'divider' });
+			menuItems.push({
+				icon: 'ti ti-trash',
+				text: i18n.ts.removeFromAntenna,
+				danger: true,
+				action: removeFromAntenna,
 			});
 		}
 	} else {

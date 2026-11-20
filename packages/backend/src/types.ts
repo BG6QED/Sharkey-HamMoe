@@ -99,6 +99,8 @@ export const moderationLogTypes = [
 	'deleteRole',
 	'clearQueue',
 	'promoteQueue',
+	'pauseQueue',
+	'resumeQueue',
 	'deleteDriveFile',
 	'deleteNote',
 	'makePrivateNote',
@@ -241,6 +243,8 @@ export type ModerationLogPayloads = {
 	};
 	clearQueue: Record<string, never>;
 	promoteQueue: Record<string, never>;
+	pauseQueue: Record<string, never>;
+	resumeQueue: Record<string, never>;
 	deleteDriveFile: {
 		fileId: string;
 		fileUserId: string | null;

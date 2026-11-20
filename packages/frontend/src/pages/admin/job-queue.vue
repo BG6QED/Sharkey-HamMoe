@@ -38,8 +38,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div class="_buttons">
 						<MkButton rounded @click="promoteAllJobs"><i class="ti ti-player-track-next"></i> Promote all jobs</MkButton>
 <!--						<MkButton rounded @click="createJob"><i class="ti ti-plus"></i> Add job</MkButton>-->
-<!--						<MkButton v-if="queueInfo.isPaused" rounded @click="resumeQueue"><i class="ti ti-player-play"></i> Resume queue</MkButton>-->
-<!--						<MkButton v-else rounded danger @click="pauseQueue"><i class="ti ti-player-pause"></i> Pause queue</MkButton>-->
+						<MkButton v-if="queueInfo.isPaused" rounded @click="resumeQueue"><i class="ti ti-player-play"></i> Resume queue</MkButton>
+						<MkButton v-else rounded danger @click="pauseQueue"><i class="ti ti-player-pause"></i> Pause queue</MkButton>
 						<MkButton rounded danger @click="clearQueue"><i class="ti ti-trash"></i> Empty queue</MkButton>
 					</div>
 				</template>
@@ -297,6 +297,26 @@ async function clearQueue() {
 		await misskeyApi('admin/queue/clear', { queue: tab.value, state: '*' });
 		await fetchCurrentQueue(true);
 		await fetchJobs(true);
+	});
+}
+
+async function pauseQueue() {
+	const { canceled } = await os.confirm({
+		type: 'warning',
+		title: i18n.ts.areYouSure,
+	});
+	if (canceled) return;
+
+	await os.promiseDialog(async () => {
+		await misskeyApi('admin/queue/pause', { queue: tab.value });
+		await fetchCurrentQueue(true);
+	});
+}
+
+async function resumeQueue() {
+	await os.promiseDialog(async () => {
+		await misskeyApi('admin/queue/resume', { queue: tab.value });
+		await fetchCurrentQueue(true);
 	});
 }
 

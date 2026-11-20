@@ -7,6 +7,7 @@ import { Injectable } from '@nestjs/common';
 import { ApiError } from '@/server/api/error.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 
 export const meta = {
@@ -57,6 +58,11 @@ export const meta = {
 			code: 'DIALOG_LIMIT_EXCEEDED',
 			id: '7c1bc084-9c14-4bcf-a910-978cd8e99b5a',
 		},
+		invalidAutoArchiveAt: {
+			message: 'Invalid auto archive date.',
+			code: 'INVALID_AUTO_ARCHIVE_AT',
+			id: '2a892bd5-487d-46a2-a5fe-3d85ad51defe',
+		},
 	},
 } as const;
 
@@ -74,6 +80,7 @@ export const paramDef = {
 		needConfirmationToRead: { type: 'boolean', default: false },
 		confetti: { type: 'boolean', default: false },
 		userId: { type: 'string', format: 'misskey:id', nullable: true, default: null },
+		autoArchiveAt: { type: 'integer', nullable: true, default: null },
 	},
 	required: ['title', 'text', 'imageUrl'],
 } as const;
@@ -82,8 +89,14 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private announcementService: AnnouncementService,
+		private timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			const autoArchiveAt = ps.autoArchiveAt != null ? new Date(ps.autoArchiveAt) : null;
+			if (ps.autoArchiveAt != null && (ps.autoArchiveAt <= this.timeService.now || Number.isNaN(autoArchiveAt?.getTime()))) {
+				throw new ApiError(meta.errors.invalidAutoArchiveAt);
+			}
+
 			try {
 				const { raw, packed } = await this.announcementService.create({
 					updatedAt: null,
@@ -99,6 +112,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					needConfirmationToRead: ps.needConfirmationToRead,
 					confetti: ps.confetti,
 					userId: ps.userId,
+					autoArchiveAt,
 				}, me);
 
 				return packed;

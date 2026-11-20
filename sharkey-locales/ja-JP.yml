@@ -178,6 +178,9 @@ _initialTutorial:
 _timelineDescription:
   bubble: "バブルタイムラインでは、管理者が選択した接続サーバーからの投稿を表示できます。"
 _serverSettings:
+  remoteNotesCleaningDescription: "指定した日数より古いリモートの投稿を定期的に削除し、データベースの肥大化を防ぎます。"
+  remoteNotesCleaningExpiryDays: "リモート投稿の保持日数"
+  remoteNotesCleaningMaxProcessingDuration: "1回あたりの最大処理時間"
   sidebarLogoUrl: "ロゴURL"
   sidebarLogoDescription: "高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。"
   sidebarLogoUsageExample:  "例：サイドバー、訪問者用、「情報」ページ"
@@ -388,3 +391,18 @@ schedulePostList: "予約投稿一覧"
 _permissions:
   "read:notes-schedule": "予約投稿を見る"
   "write:notes-schedule": "予約投稿を作成・削除する"
+followApprovalByAccountAge: "新規アカウントからのフォローを承認制にする"
+followApprovalByAccountAgeDescription: "アカウント作成から指定した期間が経過していないユーザーからのフォローを、自動承認せずフォローリクエストとして扱います。"
+_followApprovalDuration:
+  disabled: "無効"
+  h1: "1時間"
+  d1: "1日"
+  d3: "3日"
+  d7: "7日"
+  d30: "30日"
+_announcement:
+  autoArchiveAt: "自動アーカイブ日時"
+  autoArchiveAtDescription: "指定した日時を過ぎると、このお知らせは自動的にアーカイブされます。空欄の場合は自動アーカイブされません。"
+
+removeFromAntenna: "アンテナから削除"
+removeNoteFromAntennaConfirm: "「{name}」のアンテナからこのノートを削除しますか？"

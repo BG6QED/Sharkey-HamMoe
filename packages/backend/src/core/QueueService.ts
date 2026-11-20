@@ -10,6 +10,7 @@ import { MetricsTime } from 'bullmq';
 import { parse as parseRedisInfo } from 'redis-info';
 import type { IActivity } from '@/core/activitypub/type.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
+import type { MiAnnouncement } from '@/models/Announcement.js';
 import type { MiWebhook, WebhookEventTypes } from '@/models/Webhook.js';
 import type { MiSystemWebhook, SystemWebhookEventType } from '@/models/SystemWebhook.js';
 import type { Config } from '@/config.js';
@@ -41,6 +42,7 @@ import type {
 	SystemWebhookDeliverJobData,
 	ThinUser,
 	UserWebhookDeliverJobData,
+	ArchiveAnnouncementJobData,
 } from '@/queue/types.js';
 import type httpSignature from '@peertube/http-signature';
 import type * as Bull from 'bullmq';
@@ -107,6 +109,7 @@ export class QueueService implements OnModuleInit, OnApplicationBootstrap {
 				'clean-scheduler',
 				'cleanupApLogs-scheduler',
 				'hibernateUsers-scheduler',
+				'cleanRemoteNotes-scheduler',
 			],
 			daemon: [
 				'tickQueueCounts-scheduler',
@@ -251,6 +254,21 @@ export class QueueService implements OnModuleInit, OnApplicationBootstrap {
 				name: 'checkModeratorsActivity',
 				data: {
 					type: 'checkModeratorsActivity',
+				},
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
+
+		await this.systemQueue.upsertJobScheduler(
+			'cleanRemoteNotes-scheduler',
+			// 毎日午前4時に起動（最も人の少ない時間帯）
+			{ pattern: '0 4 * * *' },
+			{
+				name: 'cleanRemoteNotes',
+				data: {
+					type: 'cleanRemoteNotes',
 				},
 				opts: {
 					removeOnComplete: 10,
@@ -965,6 +983,57 @@ export class QueueService implements OnModuleInit, OnApplicationBootstrap {
 	public async queuePromoteJobs(queueType: QueueType) {
 		const queue = this.getQueue(queueType);
 		await queue.promoteJobs();
+	}
+
+	private announcementArchiveJobId(announcementId: MiAnnouncement['id'], autoArchiveAt: Date): string {
+		return `archiveAnnouncement-${announcementId}-${autoArchiveAt.getTime()}`;
+	}
+
+	@bindThis
+	public async scheduleAnnouncementArchive(announcementId: MiAnnouncement['id'], autoArchiveAt: Date): Promise<void> {
+		const jobId = this.announcementArchiveJobId(announcementId, autoArchiveAt);
+		const existingJob = await this.systemQueue.getJob(jobId);
+		if (existingJob != null) {
+			const state = await existingJob.getState();
+			if (state !== 'completed' && state !== 'failed') return;
+			await this.systemQueue.remove(jobId);
+		}
+
+		const data: ArchiveAnnouncementJobData = {
+			type: 'archiveAnnouncement',
+			announcementId,
+			autoArchiveAt: autoArchiveAt.getTime(),
+		};
+
+		await this.systemQueue.add('archiveAnnouncement', data, {
+			jobId,
+			delay: Math.max(0, autoArchiveAt.getTime() - this.timeService.now),
+			removeOnComplete: {
+				age: 3600 * 24 * 7, // keep up to 7 days
+				count: 30,
+			},
+			removeOnFail: {
+				age: 3600 * 24 * 7, // keep up to 7 days
+				count: 100,
+			},
+		});
+	}
+
+	@bindThis
+	public async clearAnnouncementArchive(announcementId: MiAnnouncement['id'], autoArchiveAt: Date): Promise<void> {
+		await this.systemQueue.remove(this.announcementArchiveJobId(announcementId, autoArchiveAt));
+	}
+
+	@bindThis
+	public async queuePause(queueType: QueueType) {
+		const queue = this.getQueue(queueType);
+		await queue.pause();
+	}
+
+	@bindThis
+	public async queueResume(queueType: QueueType) {
+		const queue = this.getQueue(queueType);
+		await queue.resume();
 	}
 
 	@bindThis

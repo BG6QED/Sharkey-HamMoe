@@ -534,32 +534,37 @@ export class DriveService {
 
 		//#region Check drive usage
 		if (user && !isLink) {
-			const usage = await this.driveFileEntityService.calcDriveUsageOf(user);
 			const isLocal = isLocalUser(user);
+			// 管理者・モデレーターは容量および単体ファイルサイズの制限をバイパスする
+			const isModerator = isLocal ? await this.roleService.isModerator(user) : false;
 
-			const policies = await this.roleService.getUserPolicies(user.id);
-			const driveCapacity = 1024 * 1024 * policies.driveCapacityMb;
-			const maxFileSize = 1024 * 1024 * policies.maxFileSizeMb;
-			this.registerLogger.debug('drive capacity override applied');
-			this.registerLogger.debug(`overrideCap: ${driveCapacity}bytes, usage: ${usage}bytes, u+s: ${usage + info.size}bytes`);
+			if (!isModerator) {
+				const usage = await this.driveFileEntityService.calcDriveUsageOf(user);
 
-			if (maxFileSize < info.size) {
-				if (isLocal) {
-					throw new IdentifiableError('f9e4e5f3-4df4-40b5-b400-f236945f7073', 'Max file size exceeded.');
-				} else {
-					// For remote users, throwing an exception will break Activity processing.
-					// Instead, force "link" mode which does not cache the file locally.
-					isLink = true;
+				const policies = await this.roleService.getUserPolicies(user.id);
+				const driveCapacity = 1024 * 1024 * policies.driveCapacityMb;
+				const maxFileSize = 1024 * 1024 * policies.maxFileSizeMb;
+				this.registerLogger.debug('drive capacity override applied');
+				this.registerLogger.debug(`overrideCap: ${driveCapacity}bytes, usage: ${usage}bytes, u+s: ${usage + info.size}bytes`);
+
+				if (maxFileSize < info.size) {
+					if (isLocal) {
+						throw new IdentifiableError('f9e4e5f3-4df4-40b5-b400-f236945f7073', 'Max file size exceeded.');
+					} else {
+						// For remote users, throwing an exception will break Activity processing.
+						// Instead, force "link" mode which does not cache the file locally.
+						isLink = true;
+					}
 				}
-			}
 
-			// If usage limit exceeded
-			// Repeat the "!isLink" check because it could be set to true by the previous block.
-			if (driveCapacity < usage + info.size && !isLink) {
-				if (isLocal) {
-					throw new IdentifiableError('c6244ed2-a39a-4e1c-bf93-f0fbd7764fa6', 'No free space.', true);
+				// If usage limit exceeded
+				// Repeat the "!isLink" check because it could be set to true by the previous block.
+				if (driveCapacity < usage + info.size && !isLink) {
+					if (isLocal) {
+						throw new IdentifiableError('c6244ed2-a39a-4e1c-bf93-f0fbd7764fa6', 'No free space.', true);
+					}
+					await this.expireOldFile(await this.cacheService.findRemoteUserById(user.id), driveCapacity - info.size);
 				}
-				await this.expireOldFile(await this.cacheService.findRemoteUserById(user.id), driveCapacity - info.size);
 			}
 		}
 		//#endregion

@@ -6,6 +6,8 @@
 import { Module, type Import } from '@nestjs/common';
 import { CoreModule } from '@/core/CoreModule.js';
 import { CheckModeratorsActivityProcessorService } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
+import { CleanRemoteNotesProcessorService } from '@/queue/processors/CleanRemoteNotesProcessorService.js';
+import { ArchiveAnnouncementProcessorService } from '@/queue/processors/ArchiveAnnouncementProcessorService.js';
 import { QueueLoggerService } from './QueueLoggerService.js';
 import { QueueProcessorService } from './QueueProcessorService.js';
 import { DeliverProcessorService } from './processors/DeliverProcessorService.js';
@@ -93,6 +95,8 @@ const $Imports = [
 		AggregateRetentionProcessorService,
 		CheckExpiredMutingsProcessorService,
 		CheckModeratorsActivityProcessorService,
+		CleanRemoteNotesProcessorService,
+		ArchiveAnnouncementProcessorService,
 		QueueProcessorService,
 		ScheduleNotePostProcessorService,
 		CleanupApLogsProcessorService,

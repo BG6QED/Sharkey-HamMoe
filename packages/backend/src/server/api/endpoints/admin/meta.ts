@@ -634,6 +634,18 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			enableRemoteNotesCleaning: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			remoteNotesCleaningMaxProcessingDurationInMinutes: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
+			remoteNotesCleaningExpiryDaysForEachNotes: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
 			deliverSuspendedSoftware: {
 				type: 'array',
 				optional: false, nullable: false,
@@ -821,6 +833,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				hasLegacyAuthFetchSetting: config.checkActivityPubGetSignature != null,
 				allowUnsignedFetch: instance.allowUnsignedFetch,
 				enableProxyAccount: instance.enableProxyAccount,
+				enableRemoteNotesCleaning: instance.enableRemoteNotesCleaning,
+				remoteNotesCleaningMaxProcessingDurationInMinutes: instance.remoteNotesCleaningMaxProcessingDurationInMinutes,
+				remoteNotesCleaningExpiryDaysForEachNotes: instance.remoteNotesCleaningExpiryDaysForEachNotes,
 				deliverSuspendedSoftware: instance.deliverSuspendedSoftware,
 			};
 		});

@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, useTemplateRef, watch, defineAsyncComponent } from 'vue';
+import { onMounted, ref, provide, useTemplateRef, watch, defineAsyncComponent } from 'vue';
 import XColumn from './column.vue';
 import type { entities as MisskeyEntities } from 'misskey-js';
 import type { Column } from '@/deck.js';
@@ -37,6 +37,22 @@ const props = defineProps<{
 const timeline = useTemplateRef('timeline');
 const soundSetting = ref<SoundStore>(props.column.soundSetting ?? { type: null, volume: 1 });
 const antennaName = ref<string | null>(null);
+// アンテナからノートを除去できるようにするためのコンテキスト
+const antenna = ref<MisskeyEntities.Antenna | null>(null);
+provide('currentAntenna', antenna);
+provide('antennaNoteRemoved', (noteId: string) => {
+	timeline.value?.removeNote(noteId);
+});
+
+watch(() => props.column.antennaId, (antennaId) => {
+	if (antennaId == null) {
+		antenna.value = null;
+		return;
+	}
+	misskeyApi('antennas/show', { antennaId }).then(value => {
+		antenna.value = value;
+	});
+}, { immediate: true });
 
 onMounted(() => {
 	if (props.column.antennaId == null) {

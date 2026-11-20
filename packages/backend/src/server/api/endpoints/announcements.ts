@@ -9,6 +9,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import type { AnnouncementsRepository } from '@/models/_.js';
 
@@ -54,11 +55,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 		private roleService: RoleService,
 		private announcementEntityService: AnnouncementEntityService,
+		private timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			const now = this.timeService.date;
 			const roles = me ? await this.roleService.getUserRoles(me) : [];
 			const query = this.queryService.makePaginationQuery(this.announcementsRepository.createQueryBuilder('announcement'), ps.sinceId, ps.untilId)
-				.andWhere('announcement.isActive = :isActive', { isActive: ps.isActive })
 				.andWhere(new Brackets(qb => {
 					if (me) qb.orWhere('announcement.userId = :meId', { meId: me.id });
 					qb.orWhere('announcement.userId IS NULL');
@@ -67,6 +69,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					if (me) qb.orWhere('announcement.forRoles && :roles', { roles: roles.map((r) => r.id) });
 					qb.orWhere('announcement.forRoles = \'{}\'');
 				}));
+
+			if (ps.isActive) {
+				query.andWhere('announcement.isActive = true');
+				query.andWhere(new Brackets(qb => {
+					qb.where('announcement.autoArchiveAt IS NULL');
+					qb.orWhere('announcement.autoArchiveAt > :now', { now });
+				}));
+			} else {
+				query.andWhere(new Brackets(qb => {
+					qb.where('announcement.isActive = false');
+					qb.orWhere('announcement.autoArchiveAt <= :now', { now });
+				}));
+			}
 
 			const announcements = await query.limit(ps.limit).getMany();
 
