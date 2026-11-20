@@ -35,7 +35,7 @@ catalog:
   "js-yaml": "5.4.3"
   "nodemon": "3.1.14"
   "rollup": "4.63.6" # Do not update! Later versions will break Vite - https://activitypub.software/TransFem-org/Sharkey/-/merge_requests/1337#note_21422
-  "sanitize-html": "2.18.0"
+  "sanitize-html": "2.18.1"
   "sharp": "0.35.5"
   "systeminformation": "5.33.15"
   "ts-jest": "29.4.14"
