@@ -17,6 +17,7 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { CacheService } from '@/core/CacheService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type Logger from '@/logger.js';
 import type { MiUserProfile } from '@/models/UserProfile.js';
 import type { UserProfilesRepository } from '@/models/_.js';
@@ -34,6 +35,7 @@ export class UserAuthService {
 
 		private readonly cacheService: CacheService,
 		private readonly internalEventService: InternalEventService,
+		private readonly timeService: TimeService,
 
 		loggerService: LoggerService,
 	) {
@@ -123,7 +125,7 @@ export class UserAuthService {
 	private async checkTOTPSecret(userProfile: MiUserProfile, twoFactorSecret: string, providedToken: string): Promise<boolean> {
 		const timeStep = 30;
 		const validationWindow = 1;
-		const now = Date.now();
+		const now = this.timeService.now;
 		const token = providedToken.trim();
 		const totp = new OTPAuth.TOTP({
 			secret: OTPAuth.Secret.fromBase32(twoFactorSecret),

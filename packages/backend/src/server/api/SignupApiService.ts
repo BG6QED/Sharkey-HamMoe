@@ -352,12 +352,12 @@ export class SignupApiService {
 			where.push({
 				id: ticket.id,
 				usedById: IsNull(),
-				usedAt: LessThanOrEqual(new Date(Date.now() - (1000 * 60 * 30))),
+				usedAt: LessThanOrEqual(new Date(this.timeService.now - (1000 * 60 * 30))),
 			});
 		}
 
 		const result = await this.registrationTicketsRepository.update(where, {
-			usedAt: new Date(),
+			usedAt: this.timeService.date,
 		});
 
 		return (result.affected ?? 0) > 0;
