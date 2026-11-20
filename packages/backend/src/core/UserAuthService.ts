@@ -5,6 +5,7 @@
 
 import bcrypt from 'bcryptjs';
 import * as argon2 from 'argon2';
+import * as Redis from 'ioredis';
 import * as OTPAuth from 'otpauth';
 import { Injectable, Inject } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
@@ -25,6 +26,9 @@ export class UserAuthService {
 	private readonly logger: Logger;
 
 	constructor(
+		@Inject(DI.redis)
+		private readonly redisClient: Redis.Redis,
+
 		@Inject(DI.userProfilesRepository)
 		private readonly userProfilesRepository: UserProfilesRepository,
 
@@ -117,15 +121,28 @@ export class UserAuthService {
 
 	@bindThis
 	private async checkTOTPSecret(userProfile: MiUserProfile, twoFactorSecret: string, providedToken: string): Promise<boolean> {
-		const totpSecret = OTPAuth.Secret.fromBase32(twoFactorSecret);
-		const totpDelta = OTPAuth.TOTP.validate({
-			secret: totpSecret,
-			token: providedToken,
+		const timeStep = 30;
+		const validationWindow = 1;
+		const now = Date.now();
+		const token = providedToken.trim();
+		const totp = new OTPAuth.TOTP({
+			secret: OTPAuth.Secret.fromBase32(twoFactorSecret),
 			digits: 6,
-			window: 5,
+			period: timeStep,
 		});
+		const delta = totp.validate({
+			token,
+			window: validationWindow,
+			timestamp: now,
+		});
+		if (delta == null) return false;
 
-		return totpDelta != null;
+		// Reject replay of the same TOTP step.
+		const step = totp.counter({ timestamp: now }) + delta;
+		const usedTokenKey = `2fa:used:${userProfile.userId}:${step}`;
+		const ttl = timeStep * (validationWindow * 2 + 1);
+		const result = await this.redisClient.set(usedTokenKey, token, 'EX', ttl, 'NX');
+		return result === 'OK';
 	}
 
 	@bindThis
