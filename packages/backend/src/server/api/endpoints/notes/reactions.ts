@@ -9,7 +9,7 @@ import type { NoteReactionsRepository } from '@/models/_.js';
 import type { MiNoteReaction } from '@/models/NoteReaction.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteReactionEntityService } from '@/core/entities/NoteReactionEntityService.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
+import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { DI } from '@/di-symbols.js';
 import { QueryService } from '@/core/QueryService.js';
 import { GetterService } from '@/server/api/GetterService.js';
@@ -64,7 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteReactionsRepository: NoteReactionsRepository,
 
 		private noteReactionEntityService: NoteReactionEntityService,
-		private noteEntityService: NoteEntityService,
+		private noteVisibilityService: NoteVisibilityService,
 		private queryService: QueryService,
 		private getterService: GetterService,
 	) {
@@ -74,7 +74,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw err;
 			});
 
-			if (!await this.noteEntityService.isVisibleForMe(note, me ? me.id : null)) {
+			const { accessible } = await this.noteVisibilityService.checkNoteVisibilityAsync(note, me);
+			if (!accessible) {
 				throw new ApiError(meta.errors.noSuchNote);
 			}
 
