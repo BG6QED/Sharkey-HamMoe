@@ -85,7 +85,7 @@ const tick = () => {
 				if (itemUrl == null || !['http:', 'https:'].includes(itemUrl.protocol)) return [];
 				// 検証済みの絶対 URL に置き換える
 				return [{ ...item, link: itemUrl.href }];
-			};)
+			});
 			fetching.value = false;
 		});
 };
