@@ -1,0 +1,59 @@
+{
+	"type": "module",
+	"name": "misskey-js",
+	"version": "2025.5.2-dev",
+	"description": "Misskey SDK for JavaScript",
+	"license": "MIT",
+	"main": "./built/index.js",
+	"types": "./built/index.d.ts",
+	"scripts": {
+		"clean": "node scripts/clean.mjs",
+		"build": "tsc -p src/tsconfig.json && node scripts/post-build.mjs",
+		"rebuild": "pnpm run clean && pnpm run build",
+		"tsd": "tsd --types \"./temp/built/src/index.d.ts\" --files \"./temp/built/test-d/**/*.ts\"",
+		"api": "pnpm api-extractor run --local --verbose",
+		"api-prod": "pnpm api-extractor run --verbose",
+		"eslint": "eslint --quiet --cache -c eslint.config.js .",
+		"typecheck-all": "pnpm run --no-bail typecheck:lib && pnpm run --no-bail typecheck:test && pnpm run --no-bail typecheck:test-d && pnpm run --no-bail typecheck:scripts",
+		"typecheck": "pnpm run typecheck:lib && pnpm run typecheck:test && pnpm run typecheck:test-d && pnpm run typecheck:scripts",
+		"typecheck:lib": "tsc -p src/tsconfig.json --noEmit",
+		"typecheck:test": "tsc -p test/tsconfig.json --noEmit",
+		"typecheck:test-d": "tsc -p test-d/tsconfig.json --noEmit",
+		"typecheck:scripts": "tsc -p tsconfig.scripts.json --noEmit",
+		"lint": "pnpm typecheck && pnpm eslint",
+		"jest": "node --no-experimental-require-module --experimental-vm-modules --experimental-import-meta-resolve --no-experimental-webstorage node_modules/jest/bin/jest.js --coverage --detectOpenHandles",
+		"test": "pnpm jest && pnpm tsd",
+		"update-autogen-code": "pnpm --filter misskey-js-type-generator generate && ncp generator/built/autogen src/autogen"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://activitypub.software/TransFem-org/Sharkey.git",
+		"directory": "packages/misskey-js"
+	},
+	"devDependencies": {
+		"@microsoft/api-extractor": "7.59.4",
+		"@misskey-dev/eslint-plugin": "2.2.1",
+		"@simplewebauthn/server": "13.3.3",
+		"@types/jest": "catalog:",
+		"@types/node": "catalog:",
+		"@typescript-eslint/eslint-plugin": "catalog:",
+		"@typescript-eslint/parser": "catalog:",
+		"eslint": "catalog:",
+		"jest": "catalog:",
+		"jest-fetch-mock": "catalog:",
+		"jest-websocket-mock": "catalog:",
+		"mock-socket": "9.3.1",
+		"ncp": "2.0.0",
+		"ts-jest": "catalog:",
+		"ts-node": "10.9.2",
+		"tsd": "0.33.0",
+		"typescript": "catalog:"
+	},
+	"files": [
+		"built"
+	],
+	"dependencies": {
+		"eventemitter3": "5.0.4",
+		"reconnecting-websocket": "4.4.0"
+	}
+}

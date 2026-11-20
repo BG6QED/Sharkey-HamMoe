@@ -1,0 +1,61 @@
+{
+	"name": "megalodon",
+	"type": "module",
+	"version": "7.0.1",
+	"private": true,
+	"description": "Mastodon API client for node.js and browser",
+	"main": "./built/lib/index.js",
+	"typings": "./built/lib/index.d.ts",
+	"scripts": {
+		"build": "tsc -p src/lib/tsconfig.json",
+		"typecheck-all": "pnpm run --no-bail typecheck:lib && pnpm run --no-bail typecheck:test",
+		"typecheck": "pnpm run typecheck:lib && pnpm run typecheck:test",
+		"typecheck:lib": "tsc -p src/lib/tsconfig.json --noEmit",
+		"typecheck:test": "tsc -p src/test/tsconfig.json --noEmit",
+		"lint": "pnpm run typecheck",
+		"jest": "cross-env NODE_ENV=test node --no-experimental-require-module --experimental-vm-modules --experimental-import-meta-resolve --no-experimental-webstorage node_modules/jest/bin/jest.js --coverage --detectOpenHandles",
+		"test": "pnpm run jest"
+	},
+	"engines": {
+		"node": ">=26.0.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/h3poteto/megalodon.git"
+	},
+	"keywords": [
+		"mastodon",
+		"client",
+		"api",
+		"streaming",
+		"rest",
+		"proxy"
+	],
+	"author": "h3poteto",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/h3poteto/megalodon/issues"
+	},
+	"homepage": "https://github.com/h3poteto/megalodon#readme",
+	"dependencies": {
+		"axios": "catalog:",
+		"dayjs": "1.11.23",
+		"oauth": "0.10.2"
+	},
+	"devDependencies": {
+		"@jest/globals": "catalog:",
+		"@types/jest": "catalog:",
+		"@types/node": "catalog:",
+		"@types/oauth": "0.9.6",
+		"@typescript-eslint/eslint-plugin": "catalog:",
+		"@typescript-eslint/parser": "catalog:",
+		"eslint": "catalog:",
+		"jest": "catalog:",
+		"jest-mock": "catalog:",
+		"jest-worker": "catalog:",
+		"ts-jest": "catalog:",
+		"ts-node": "10.9.2",
+		"typescript": "catalog:"
+	},
+	"sideEffects": false
+}

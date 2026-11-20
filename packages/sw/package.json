@@ -1,0 +1,31 @@
+{
+	"name": "sw",
+	"private": true,
+	"scripts": {
+		"watch": "nodemon -w ../../package.json -e json --exec \"node build.js watch\"",
+		"watch:fast": "nodemon -w ../../package.json -e json --exec \"node build.js watch --no-clean\"",
+		"build": "node build.js",
+		"typecheck-all": "pnpm run --no-bail typecheck:sw && pnpm run --no-bail typecheck:scripts",
+		"typecheck": "pnpm run typecheck:sw && pnpm run typecheck:scripts",
+		"typecheck:sw": "tsc -p tsconfig.sw.json --noEmit",
+		"typecheck:scripts": "tsc -p tsconfig.scripts.json --noEmit",
+		"eslint": "eslint --quiet --cache -c eslint.config.js",
+		"lint": "pnpm typecheck && pnpm eslint"
+	},
+	"dependencies": {
+		"frontend-shared": "workspace:*",
+		"idb-keyval": "6.2.2",
+		"locales": "workspace:*",
+		"misskey-js": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"@typescript-eslint/parser": "catalog:",
+		"@typescript/lib-webworker": "npm:@types/serviceworker@0.0.203",
+		"esbuild": "0.28.2",
+		"eslint-plugin-import": "catalog:",
+		"nodemon": "3.1.14",
+		"typescript": "catalog:"
+	},
+	"type": "module"
+}

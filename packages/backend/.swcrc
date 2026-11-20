@@ -1,0 +1,27 @@
+{
+	"$schema": "https://swc.rs/schema.json",
+	"jsc": {
+		"parser": {
+			"syntax": "typescript",
+			"dynamicImport": true,
+			"decorators": true
+		},
+		"transform": {
+			"legacyDecorator": true,
+			"decoratorMetadata": true
+		},
+		"experimental": {
+			"keepImportAssertions": true
+		},
+		"baseUrl": "src",
+		"paths": {
+			"@/*": ["*"]
+		},
+		"target": "esnext"
+	},
+	"minify": false,
+	"sourceMaps": "inline",
+	"module": {
+		"type": "es6"
+	}
+}

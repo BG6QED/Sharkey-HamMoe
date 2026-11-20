@@ -1,0 +1,15 @@
+{
+	"type": "module",
+	"scripts": {
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"eslint": "eslint --quiet --cache -c eslint.config.js",
+		"lint": "pnpm typecheck && pnpm eslint"
+	},
+	"devDependencies": {
+		"@misskey-dev/eslint-plugin": "2.2.1",
+		"@stylistic/eslint-plugin": "5.10.0",
+		"eslint": "catalog:",
+		"typescript": "catalog:",
+		"vue-eslint-parser": "10.4.1"
+	}
+}
