@@ -1,0 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+const MAP: Record<string, string> = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'"': '&quot;',
+	'\'': '&#39;',
+};
+
+export function escapeHtml(input: string): string {
+	return input.replace(/[&<>"']/g, c => MAP[c]);
+}
